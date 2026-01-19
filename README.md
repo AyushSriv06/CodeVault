@@ -1,5 +1,3 @@
-![Cover](https://github.com/PalashChitnavis/BeatCode/blob/master/frontend/public/cover.png)
-
 # CodeVault
 
 **CodeVault** : Your go-to platform for seamless remote coding, collaboration, and practice.
@@ -11,8 +9,6 @@
 </div>
 
 ## About The Project
-
-![HomePage](https://github.com/PalashChitnavis/BeatCode/blob/master/frontend/public/home-page.png)
 
 Welcome to **CodeVault**, your ultimate coding companion! With a sleek interface and powerful functionality, CodeVault offers:
 
