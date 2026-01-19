@@ -7,7 +7,6 @@ import { fetchQuestionById } from "../../services/practiceProblemsApi";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import Question from "../../components/Question/Question.jsx";
-import "./QuestionPage.css";
 import ProblemList from "../../components/ProblemList/ProblemList.jsx";
 import NavBar from "../../components/NavBar/NavBar.jsx";
 import CodeEditor from "../../components/CodeEditor/CodeEditor.jsx";
@@ -19,20 +18,18 @@ import FullScreenConfetti from "../../components/Confetti/FullScreenConfetti.jsx
 import Loading from "../../components/Loading/Loading.jsx";
 import { useDispatch, useSelector } from "react-redux";
 import { updateToggleOutput } from "../../redux/slices/toggleOutput.js";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
+import { Maximize2, Minimize2, Terminal } from "lucide-react";
+
 const QuestionPage = () => {
         const [loading, setLoading] = useState(false);
         const { id } = useParams();
         const [question, setQuestion] = useState(null);
-        const [navigation, setNavigation] = useState("question");
         const dispatch = useDispatch();
         const toggleOutput = useSelector((state) => state.toggleOutput?.value);
         const practiceStatus = useSelector((state) => state.practiceStatus?.value);
         const output = useSelector((state) => state.output?.value);
         const [response, setResponse] = useState();
-        const [screen, setScreen] = useState(window.screen.width);
-        window.addEventListener("resize", () => {
-                setScreen(window.screen.width);
-        });
 
         useEffect(() => {
                 const fetchData = async () => {
@@ -45,7 +42,6 @@ const QuestionPage = () => {
                                 console.error("Error fetching questions:", error);
                         }
                 };
-                setNavigation("question");
                 fetchData();
                 if (isLoggedIn()) {
                         const email = localStorage.getItem("email");
@@ -58,129 +54,80 @@ const QuestionPage = () => {
         }, [id]);
 
         const handleToggleOutput = () => {
-                dispatch(updateToggleOutput(toggleOutput === true ? false : true));
+                dispatch(updateToggleOutput(!toggleOutput));
         };
 
+        if (loading) return <div className="min-h-screen bg-zinc-950 flex items-center justify-center"><Loading /></div>;
+
         return (
-                <div className="w-[100vw] h-[100vh]">
-                        <div className="h-[8vh] w-[100vw] flex justify-center items-center">
-                                <Header />
+                <div className="min-h-screen bg-zinc-950 flex flex-col relative overflow-hidden text-zinc-100 selection:bg-purple-500/30">
+                        {/* Background Gradients */}
+                        <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+                                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-[120px]" />
+                                <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[50%] bg-blue-500/5 rounded-full blur-[100px]" />
                         </div>
-                        {loading ? (
-                                <div className="h-[75vh] lg:h-[87vh] w-full mx-auto">
-                                        <Loading />
+
+                        <div className="relative z-10 flex flex-col h-full flex-grow">
+                                {/* Header */}
+                                <div className="h-16 border-b border-white/5 bg-black/20 backdrop-blur-sm z-50">
+                                        <Header />
                                 </div>
-                        ) : (
-                                <div className="lg:h-[87vh] w-[100vw] lg:w-[98%] lg:mx-auto lg:justify-between min-h-[75vh] flex flex-col lg:flex-row gap-4 items-center justify-start">
+
+                                <div className="flex-grow p-4 lg:p-6 overflow-hidden flex flex-col lg:flex-row gap-4 h-[calc(100vh-4rem)]">
                                         {practiceStatus && <FullScreenConfetti />}
-                                        <div
-                                                className={`bg-neutral-800 h-[40vh]  w-full lg:border lg:rounded-[10px] lg:border-solid lg:border-[white]  pb-4 lg:h-[95%]`}
-                                        >
-                                                <div className="h-[7vh] w-full flex flex-wrap text-nowrap justify-around border-b-[rgb(76,76,76)] border-b border-solid">
-                                                        <button
-                                                                className={`${
-                                                                        navigation === `question` ? `active` : ``
-                                                                } questionpagebtn`}
-                                                                onClick={() => setNavigation("question")}
-                                                        >
-                                                                Question
-                                                        </button>
-                                                        <button
-                                                                className={`${
-                                                                        navigation === `solution` ? `active` : ``
-                                                                } questionpagebtn`}
-                                                                onClick={() => setNavigation("solution")}
-                                                        >
-                                                                Solution
-                                                        </button>
-                                                        <button
-                                                                className={`${
-                                                                        navigation === `submissions` ? `active` : ``
-                                                                } questionpagebtn`}
-                                                                onClick={() => {
-                                                                        setNavigation("submissions");
-                                                                }}
-                                                        >
-                                                                Submissions
-                                                        </button>
-                                                        <button
-                                                                className={`${
-                                                                        navigation === `problemlist` ? `active` : ``
-                                                                } questionpagebtn`}
-                                                                onClick={() => setNavigation("problemlist")}
-                                                        >
-                                                                Problem List
-                                                        </button>
-                                                </div>
-                                                <div className="w-[100%] h-[33vh] lg:h-[75vh] overflow-y-scroll">
-                                                        {(() => {
-                                                                switch (navigation) {
-                                                                        case "question":
-                                                                                return (
-                                                                                        question && (
-                                                                                                <Question
-                                                                                                        question={question}
-                                                                                                />
-                                                                                        )
-                                                                                );
-                                                                        case "solution":
-                                                                                return (
-                                                                                        question && (
-                                                                                                <ProblemSolutions
-                                                                                                        question={question}
-                                                                                                />
-                                                                                        )
-                                                                                );
-                                                                        case "submissions":
-                                                                                return question && <QuestionSubmission />;
-                                                                        case "problemlist":
-                                                                                return <ProblemList response={response} />;
-                                                                }
-                                                        })()}
-                                                </div>
-                                        </div>
-                                        <div className="w-full bg-[#202020] h-[50vh] border rounded-[10px] border-solid border-[white] lg:h-[95%]">
-                                                <div className="w-[100%] bg-[#202020] h-[100%] border rounded-[10px] border-solid border-[white] ">
-                                                        <div className="w-[96%] h-[10%] lg:h-[8%]">
-                                                                <NavBar />
+
+                                        {/* Left Panel: Tabs & Content */}
+                                        <div className="w-full lg:w-1/2 h-full flex flex-col bg-zinc-900/40 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden shadow-2xl">
+                                                <Tabs defaultValue="question" className="w-full h-full flex flex-col">
+                                                        <div className="border-b border-white/10 bg-zinc-900/60 px-2 pt-2">
+                                                                <TabsList className="w-full bg-transparent justify-start h-auto p-0 gap-1">
+                                                                        <TabsTrigger value="question" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-zinc-100 data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-blue-500 rounded-none px-4 py-2 hover:bg-white/5 transition-colors">
+                                                                                Question
+                                                                        </TabsTrigger>
+                                                                        <TabsTrigger value="solution" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-zinc-100 data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-blue-500 rounded-none px-4 py-2 hover:bg-white/5 transition-colors">
+                                                                                Solution
+                                                                        </TabsTrigger>
+                                                                        <TabsTrigger value="submissions" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-zinc-100 data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-blue-500 rounded-none px-4 py-2 hover:bg-white/5 transition-colors">
+                                                                                Submissions
+                                                                        </TabsTrigger>
+                                                                        <TabsTrigger value="problemlist" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-zinc-100 data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-blue-500 rounded-none px-4 py-2 hover:bg-white/5 transition-colors">
+                                                                                Problem List
+                                                                        </TabsTrigger>
+                                                                </TabsList>
                                                         </div>
-                                                        {toggleOutput ? (
-                                                                <div className={`h-[40%]`}>
-                                                                        {question && <CodeEditor question={question} />}
-                                                                </div>
-                                                        ) : (
-                                                                <div className={`h-[80%]`}>
-                                                                        {question && <CodeEditor question={question} />}
-                                                                </div>
-                                                        )}
-                                                        <button
-                                                                onClick={handleToggleOutput}
-                                                                className={`palash flex items-center pl-[2%]  w-[96%] h-[8%] ml-[2%] text-[#fff]`}
-                                                        >
-                                                                Output Window{" "}
-                                                                {toggleOutput ? (
-                                                                        <i className="pl-[10px] fa-solid fa-angle-down"></i>
-                                                                ) : (
-                                                                        <i className="pl-[10px] fa-solid fa-angle-up"></i>
-                                                                )}
-                                                        </button>
-                                                        {toggleOutput && (
-                                                                <div className="h-[35%] w-[96%] bg-[#272822] ml-[2%] mt-[2%]">
-                                                                        <textarea
-                                                                                placeholder="Output will be displayed here"
-                                                                                id="userOutput"
-                                                                                className="bg-[#272822] text-[aliceblue] w-[100%] h-[100%] resize-none text-xl border p-4 rounded-[10px] border-solid border-[white] leading-8"
-                                                                                readOnly
-                                                                                value={output}
-                                                                        ></textarea>
-                                                                </div>
-                                                        )}
+
+                                                        <div className="flex-grow overflow-hidden relative bg-zinc-950/30">
+                                                                <TabsContent value="question" className="h-full overflow-y-auto custom-scrollbar p-0 m-0 data-[state=active]:flex flex-col">
+                                                                        {question && <Question question={question} />}
+                                                                </TabsContent>
+                                                                <TabsContent value="solution" className="h-full overflow-y-auto custom-scrollbar p-4 m-0">
+                                                                        {question && <ProblemSolutions question={question} />}
+                                                                </TabsContent>
+                                                                <TabsContent value="submissions" className="h-full overflow-y-auto custom-scrollbar p-4 m-0">
+                                                                        {question && <QuestionSubmission />}
+                                                                </TabsContent>
+                                                                <TabsContent value="problemlist" className="h-full overflow-y-auto custom-scrollbar p-4 m-0">
+                                                                        <ProblemList response={response} />
+                                                                </TabsContent>
+                                                        </div>
+                                                </Tabs>
+                                        </div>
+
+                                        {/* Right Panel: Code Editor */}
+                                        <div className="w-full lg:w-1/2 h-full flex flex-col bg-zinc-900/40 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden shadow-2xl relative">
+                                                <div className="flex-none z-20 bg-zinc-900/80 border-b border-white/5">
+                                                        <NavBar />
                                                 </div>
+
+                                                {/* Editor Area */}
+                                                <textarea
+                                                        className="w-full h-full bg-transparent text-zinc-300 p-4 font-mono text-sm resize-none focus:outline-none"
+                                                        readOnly
+                                                        value={output || "Run code to see output..."}
+                                                        placeholder="Output will be displayed here..."
+                                                />
                                         </div>
                                 </div>
-                        )}
-                        <div className="h-[5vh] w-[100vw] flex justify-center items-center">
-                                <Footer />
                         </div>
                 </div>
         );

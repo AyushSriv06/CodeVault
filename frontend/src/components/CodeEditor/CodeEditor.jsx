@@ -24,14 +24,6 @@ import "ace-builds/src-noconflict/theme-solarized_dark";
 import "ace-builds/src-noconflict/theme-solarized_light";
 import "ace-builds/src-noconflict/theme-terminal";
 
-// Snippets (Required for enableSnippets: true)
-import "ace-builds/src-noconflict/snippets/c_cpp";
-import "ace-builds/src-noconflict/snippets/java";
-import "ace-builds/src-noconflict/snippets/javascript";
-import "ace-builds/src-noconflict/snippets/python";
-import "ace-builds/src-noconflict/snippets/csharp";
-import "ace-builds/src-noconflict/snippets/ruby";
-
 import "ace-builds/src-noconflict/ext-language_tools";
 import "./CodeEditor.css";
 import { useLocation } from "react-router-dom";
@@ -60,19 +52,10 @@ function CodeEditor({ question, socket, roomID, users }) {
                 if (window.ace) {
                         const editor = ace.edit("ace-editor");
                         editor.getSession().setTabSize(tabSize);
-
-                        // Force resize to ensure it picks up the height
-                        editor.resize(true);
-
                         // getBoilerplateCode might rely on location, language, question
                         const boilerplateCode = getBoilerplateCode(location, language, question);
-                        if (boilerplateCode) {
-                                dispatch(updateCode(boilerplateCode));
-                                editor.setValue(boilerplateCode);
-                        } else if (!code) {
-                                // Default fallback if no boilerplate
-                                editor.setValue("// Select a language to begin");
-                        }
+                        dispatch(updateCode(boilerplateCode));
+                        editor.setValue(boilerplateCode);
                 }
         }, [tabSize, language, location.pathname]);
 
