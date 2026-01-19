@@ -1,9 +1,10 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import React, { useState } from "react";
-import "./InputWindow.css";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateUserInput } from "../../redux/slices/userInputSlice";
+import { Textarea } from "../ui/textarea";
+// import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"; // Removed
 
 const InputWindow = ({ socket, roomID }) => {
         const userInput = useSelector((state) => state.userInput?.value);
@@ -17,21 +18,13 @@ const InputWindow = ({ socket, roomID }) => {
                         });
         };
         return (
-                <div className="w-[100%] h-[100%] ">
-                        <p className="text-[white] flex flex-col text-2xl lg:flex-row lg:gap-5 lg:justify-start justify-center items-center px-2">
-                                Input{" "}
-                                <span className="text-sm flex justify-center items-center lg:text-lg">
-                                        (Enter input if required before pressing run)
-                                </span>
-                        </p>
-                        <textarea
-                                className="bg-[#272822] text-[aliceblue] w-[100%] h-[100%] resize-none text-xl leading-[1.3] border p-2.5 rounded-[10px] border-solid border-[white]"
+                <div className="h-full w-full bg-[#1e1e1e] p-2">
+                        <Textarea
+                                className="h-full w-full border-0 bg-transparent focus-visible:ring-0 resize-none font-mono text-zinc-300 placeholder:text-zinc-600 p-2 focus:outline-none"
                                 name="userInput"
                                 id="userInput"
-                                cols="50"
-                                rows="4"
                                 value={userInput || ""}
-                                placeholder="Enter Input Value Here"
+                                placeholder="Enter input here..."
                                 onChange={handleInputChange}
                         />
                 </div>

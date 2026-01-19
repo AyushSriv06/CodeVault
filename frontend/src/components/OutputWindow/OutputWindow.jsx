@@ -1,24 +1,22 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import React, { useEffect } from "react";
-import "./OutputWindow.css";
+import React from "react";
 import { useSelector } from "react-redux";
+// import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Textarea } from "../ui/textarea";
+
 function OutputWindow({ outputValue }) {
         const output = useSelector((state) => state.output?.value);
 
         return (
-                <div className="w-[100%] h-[100%]">
-                        <p className="text-[white] text-2xl px-2 py-5 lg:justify-start  lg:py-0 flex justify-center">
-                                Output
-                        </p>
-                        <textarea
-                                placeholder="Output will be displayed here"
-                                id="userOutput"
-                                className="bg-[#272822] text-[aliceblue] w-[100%] h-[100%] resize-none text-xl leading-[1.1] border p-2.5 rounded-[10px] border-solid border-[white]"
+                <div className="h-full w-full bg-[#1e1e1e] p-2">
+                        <Textarea
+                                placeholder="Output will be displayed here..."
+                                className="h-full w-full border-0 bg-transparent focus-visible:ring-0 resize-none font-mono text-zinc-300 placeholder:text-zinc-600 p-2 focus:outline-none"
                                 readOnly
                                 value={output || ""}
-                        ></textarea>
+                        />
                 </div>
         );
 }

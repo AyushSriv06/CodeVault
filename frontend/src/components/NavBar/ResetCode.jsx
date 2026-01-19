@@ -11,7 +11,8 @@ import { updateCode } from "../../redux/slices/codeSlice";
 import { updateUserInput } from "../../redux/slices/userInputSlice";
 import { updateOutput } from "../../redux/slices/outputSlice";
 import { updateToggleOutput } from "../../redux/slices/toggleOutput";
-import "@fortawesome/fontawesome-svg-core";
+import { Button } from "../ui/button";
+import { RotateCcw } from "lucide-react";
 const ResetCode = () => {
         const language = useSelector((state) => state.language?.value);
         const dispatch = useDispatch();
@@ -41,12 +42,14 @@ const ResetCode = () => {
         }, [location.pathname, id]);
 
         return (
-                <button
-                        className="h-[100%] w-[100%] text-[white] cursor-pointer bg-neutral-800 border-[none]"
+                <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={handleResetClick}
+                        className="text-zinc-400 hover:text-zinc-100"
                 >
-                        <i className="fas fa-undo fa-xl"></i>
-                </button>
+                        <RotateCcw className="h-5 w-5" />
+                </Button>
         );
 };
 

@@ -5,8 +5,10 @@ import React, { useEffect } from "react";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import { Link, useLocation } from "react-router-dom";
-import { toast } from "react-toastify";
 import { handlegoogleRedirect } from "../../services/getGoogleAuth";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent } from "../../components/ui/card";
+
 function GoogleRedirect() {
         const search = window.location.search;
         const params = new URLSearchParams(search);
@@ -15,46 +17,48 @@ function GoogleRedirect() {
         useEffect(() => {
                 handlegoogleRedirect(code);
         }, []);
-        return (
-                <>
-                        <div className="h-[100vh] w-[100vw]">
-                                <div className="h-[8vh] w-[100vw] flex justify-center items-center">
-                                        <Header />
-                                </div>
 
-                                <div className="flex h-[75vh] lg:h-[87vh] items-center flex-col lg:flex-row lg:justify-around lg:px-24 lg:w-full lg:items-center  text-white font-sans text-left">
-                                        <div className=" w-full lg:w-[65%] font-bold lg:flex lg:flex-col lg:gap-4">
-                                                <p className="text-5xl lg:text-7xl flex lg:justify-start justify-center pt-16 lg:pt-8">
-                                                        CodeVault
-                                                </p>
-                                                <p className="text-xl flex justify-center lg:justify-start py-3 lg:text-3xl">
-                                                        A better way to level up your coding.
-                                                </p>
-                                                <div className="flex flex-col  lg:flex-row lg:justify-start justify-center gap-8 items-center w-full text-nowrap py-6">
-                                                        <button className="text-green-600 lg:text-2xl w-[60%] lg:w-[22%] lg:text-wrap text-xl border-2 border-green-600 rounded-full px-6 py-4  hover:bg-green-600 hover:text-white">
+        return (
+                <div className="min-h-screen bg-background flex flex-col">
+                        <Header />
+                        <main className="flex-1 flex items-center justify-center p-6">
+                                <div className="container max-w-6xl w-full grid lg:grid-cols-2 gap-12 items-center">
+                                        <div className="space-y-8 text-center lg:text-left">
+                                                <div className="space-y-4">
+                                                        <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl xl:text-6xl text-primary">
+                                                                CodeVault
+                                                        </h1>
+                                                        <p className="text-xl text-muted-foreground lg:text-2xl">
+                                                                A better way to level up your coding skills.
+                                                        </p>
+                                                </div>
+
+                                                <div className="flex flex-wrap justify-center lg:justify-start gap-4">
+                                                        <Button asChild size="lg" className="rounded-full px-8">
                                                                 <Link to="/practiceproblems">Practice Problems</Link>
-                                                        </button>
-                                                        <button className="text-green-600 w-[60%] lg:w-[22%] lg:text-wrap lg:text-2xl text-xl border-2 border-green-600 rounded-full px-6 py-4  hover:bg-green-600 hover:text-white">
+                                                        </Button>
+                                                        <Button asChild variant="outline" size="lg" className="rounded-full px-8">
                                                                 <Link to="/onlinecompiler">Online Compiler</Link>
-                                                        </button>
-                                                        <button className="text-green-600 w-[60%] lg:w-[22%] lg:text-wrap lg:text-2xl text-xl border-2 border-green-600 rounded-full px-6 py-4  hover:bg-green-600 hover:text-white">
+                                                        </Button>
+                                                        <Button asChild variant="ghost" size="lg" className="rounded-full px-8">
                                                                 <Link to="/room">Code Room</Link>
-                                                        </button>
+                                                        </Button>
                                                 </div>
                                         </div>
-                                        <div className="hidden lg:flex lg:w-[35%]">
+
+                                        <div className="hidden lg:block relative">
+                                                {/* Placeholder for the tree image if you want to keep it, otherwise removed or replaced */}
+                                                <div className="aspect-square bg-gradient-to-tr from-primary/20 to-secondary/20 rounded-full blur-3xl opacity-50 absolute inset-0" />
                                                 <img
                                                         src="/Home-Page-Tree.svg"
-                                                        alt="Coding Tree Image"
-                                                        className="w-[100%]  mt-10 "
+                                                        alt="Coding Tree"
+                                                        className="relative z-10 w-full drop-shadow-2xl"
                                                 />
                                         </div>
                                 </div>
-                                <div className="h-[5vh] w-[100vw] flex justify-center items-center">
-                                        <Footer />
-                                </div>
-                        </div>
-                </>
+                        </main>
+                        <Footer />
+                </div>
         );
 }
 

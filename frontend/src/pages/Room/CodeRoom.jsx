@@ -293,318 +293,92 @@ const CodeRoom = () => {
                 setScreen(window.screen.width);
         }
 
-        return screen > 768 ? (
-                <div className="h-[100vh] w-[100vw]">
-                        <div className="h-[8vh] w-[100vw] flex justify-center items-center">
-                                <Header />
-                        </div>
-                        <div className="min-h-[87vh] w-full">
+        return (
+                <div className="h-screen w-screen bg-background flex flex-col overflow-hidden">
+                        <Header />
+                        <main className="flex-1 flex overflow-hidden pt-16">
                                 {!isLoggedIn() ? (
-                                        <div className="z-1999 fixed w-full h-[87vh] flex justify-center items-center  bg-[#000] bg-opacity-50 ">
-                                                <div className="bg-[#2f3136] z-[2000] w-[95%] h-[90%] flex-col flex justify-evenly items-center p-8 rounded-2xl text-white">
-                                                        <div className="text-2xl text-center">
-                                                                To use this feature please register yourself, thank you 😊
-                                                        </div>
-                                                        <div>
-                                                                <Register />
-                                                        </div>
+                                        <div className="flex-1 flex items-center justify-center bg-black/50 backdrop-blur-sm absolute inset-0 z-50">
+                                                <div className="bg-card p-8 rounded-lg border border-border shadow-lg text-center space-y-4 max-w-md">
+                                                        <h2 className="text-xl font-semibold">Join the collaboration</h2>
+                                                        <p className="text-muted-foreground">Please log in to participate.</p>
+                                                        <Register />
                                                 </div>
                                         </div>
                                 ) : (
-                                        <div className="flex items-center h-[87vh] w-full">
-                                                <div className="w-[50%] h-full">
-                                                        <div className="w-[96%] h-[8vh]">
-                                                                {isLoggedIn() && <NavBar socket={socket} roomID={roomID} />}
+                                        <div className="flex w-full h-full">
+                                                {/* Editor Section */}
+                                                <div className="flex-1 flex flex-col min-w-0 border-r border-border">
+                                                        <div className="h-14 border-b border-border bg-muted/20">
+                                                                <NavBar socket={socket} roomID={roomID} />
                                                         </div>
-                                                        <div className="w-[100%] h-[76vh]">
-                                                                {isLoggedIn() && (
-                                                                        <CodeEditor
-                                                                                className="z-10"
-                                                                                socket={socket}
-                                                                                roomID={roomID}
-                                                                                users={users}
-                                                                        />
-                                                                )}
+                                                        <div className="flex-1 relative">
+                                                                <CodeEditor
+                                                                        socket={socket}
+                                                                        roomID={roomID}
+                                                                        users={users}
+                                                                />
                                                         </div>
                                                 </div>
 
-                                                <div className="h-full w-[50%]">
-                                                        <div className="flex w-full h-full gap-5">
-                                                                <div className="w-[48%] h-[96.75%] flex flex-col justify-around">
-                                                                        <div className="h-[40%]">
-                                                                                <InputWindow
-                                                                                        socket={socket}
-                                                                                        roomID={roomID}
-                                                                                />
-                                                                        </div>
-                                                                        <div className=" h-[40%]">
-                                                                                <OutputWindow />
-                                                                        </div>
-                                                                </div>
-                                                                <div className="flex justify-evenly items-center h-full flex-col w-[48%]">
-                                                                        <div className="py-2">
-                                                                                <CopyToClipboard
-                                                                                        text={roomID}
-                                                                                        onCopy={() =>
-                                                                                                toast.success(
-                                                                                                        `Room ID : ${roomID} copied to clipboard`,
-                                                                                                        {
-                                                                                                                position: "top-right",
-                                                                                                        }
-                                                                                                )
-                                                                                        }
-                                                                                >
-                                                                                        <div className=" w-full  h-[6vh] bg-[#2f3136] rounded-lg flex justify-between p-3 cursor-pointer hover:bg-[#9298a8]">
-                                                                                                <div className="text-white w-[50%] px-3 flex  items-center h-full text-3xl">
-                                                                                                        {roomID}
-                                                                                                </div>
-                                                                                                <div className="w-[50%] h-full flex justify-end">
-                                                                                                        <button className="text-white flex justify-end items-center text-xl ">
-                                                                                                                <i className="fa-solid fa-copy"></i>
-                                                                                                        </button>
-                                                                                                </div>
-                                                                                        </div>
-                                                                                </CopyToClipboard>
-                                                                        </div>
-                                                                        <div className="w-[90%] ml-[2vw] pt-[2vh] h-[90%] flex flex-col gap-5">
-                                                                                <div className=" h-[45%] bg-[#272822] flex justify-center items-center rounded-lg text-white overflow-y-scroll">
-                                                                                        {!myStream &&
-                                                                                                !otherStream &&
-                                                                                                me &&
-                                                                                                me.username}
-                                                                                        {myStream && (
-                                                                                                <div className="flex justify-center items-center rounded-xl">
-                                                                                                        <ReactPlayer
-                                                                                                                playing
-                                                                                                                height="90%"
-                                                                                                                width="85%"
-                                                                                                                url={
-                                                                                                                        myStream
-                                                                                                                }
-                                                                                                                volume={0}
-                                                                                                        />
-                                                                                                </div>
-                                                                                        )}
-                                                                                </div>
-                                                                                <div className=" h-[45%] bg-[#272822] flex justify-center items-center rounded-lg text-white overflow-y-scroll">
-                                                                                        {!myStream &&
-                                                                                                !otherStream &&
-                                                                                                otherUser &&
-                                                                                                otherUser.username}
-                                                                                        {otherStream && (
-                                                                                                <div className="flex justify-center items-center rounded-xl ">
-                                                                                                        <ReactPlayer
-                                                                                                                playing
-                                                                                                                height="90%"
-                                                                                                                width="85%"
-                                                                                                                url={
-                                                                                                                        otherStream
-                                                                                                                }
-                                                                                                                volume={1}
-                                                                                                        />
-                                                                                                </div>
-                                                                                        )}
-                                                                                </div>
-                                                                        </div>
-                                                                        <div className="w-[90%] ml-[2vw]  h-[10%] flex flex-col gap-5">
-                                                                                <div className="flex w-[100%] justify-around h-[6vh]">
-                                                                                        {endCall ? (
-                                                                                                <div
-                                                                                                        onClick={
-                                                                                                                endVideoCall
-                                                                                                        }
-                                                                                                        className="bg-red-500 w-[40%] flex justify-center items-center rounded-2xl gap-3 cursor-pointer hover:bg-red-700 text-white"
-                                                                                                >
-                                                                                                        <i className="fa-solid fa-phone-slash"></i>
-                                                                                                        End Call
-                                                                                                </div>
-                                                                                        ) : acceptCallButton ? (
-                                                                                                <div
-                                                                                                        onClick={
-                                                                                                                startVideoCall
-                                                                                                        }
-                                                                                                        className="bg-green-500 w-[40%] flex justify-center items-center rounded-2xl gap-3 cursor-pointer hover:bg-green-700 text-white"
-                                                                                                >
-                                                                                                        <i className="fa-solid fa-video"></i>
-                                                                                                        Accept Call
-                                                                                                </div>
-                                                                                        ) : (
-                                                                                                <div
-                                                                                                        onClick={
-                                                                                                                startVideoCall
-                                                                                                        }
-                                                                                                        className="bg-blue-500 w-[40%] flex justify-center items-center rounded-2xl gap-3 cursor-pointer hover:bg-blue-700 text-white"
-                                                                                                >
-                                                                                                        <i className="fa-solid fa-video"></i>
-                                                                                                        Video Call
-                                                                                                </div>
-                                                                                        )}
-
-                                                                                        <div
-                                                                                                onClick={leaveRoom}
-                                                                                                className="bg-red-500 w-[40%] flex gap-2 justify-center items-center rounded-2xl text-white text-l cursor-pointer hover:bg-red-700"
-                                                                                        >
-                                                                                                <i className="fa-solid fa-arrow-right-from-bracket"></i>{" "}
-                                                                                                Leave Room
-                                                                                        </div>
-                                                                                </div>
-                                                                        </div>
-                                                                </div>
-                                                        </div>
-                                                </div>
-                                        </div>
-                                )}
-                        </div>
-                        <div className="h-[5vh] w-[100vw] flex justify-center items-center">
-                                <Footer />
-                        </div>
-                </div>
-        ) : (
-                <div className="h-[100vh] w-[100vw]">
-                        <div className="h-[8vh] w-[100vw] flex justify-center items-center">
-                                <Header />
-                        </div>
-                        <div className="h-[75vh] lg:h-[87vh] w-full overflow-y-scroll">
-                                {!isLoggedIn() ? (
-                                        <div className="z-1999 fixed w-full h-[75vh] lg:h-[87vh] flex justify-center items-center  bg-[#000] bg-opacity-50 ">
-                                                <div className="bg-[#2f3136] z-[2000] w-[95%] h-[90%] flex-col flex justify-evenly items-center p-8 rounded-2xl text-white">
-                                                        <div className="text-2xl text-center">
-                                                                To use this feature please register yourself, thank you 😊
-                                                        </div>
-                                                        <div>
-                                                                <Register />
-                                                        </div>
-                                                </div>
-                                        </div>
-                                ) : (
-                                        <div className="flex items-center   flex-col h-[75vh] lg:h-[87vh] w-full gap-5">
-                                                <div className="flex justify-center h-[5vh] items-center py-2">
-                                                        <CopyToClipboard
-                                                                text={roomID}
-                                                                onCopy={() =>
-                                                                        toast.success(
-                                                                                `Room ID : ${roomID} copied to clipboard`,
-                                                                                {
-                                                                                        position: "top-right",
-                                                                                }
-                                                                        )
-                                                                }
-                                                        >
-                                                                <div className=" w-full h-full bg-[#2f3136] rounded-lg flex justify-between p-2 cursor-pointer hover:bg-[#9298a8]">
-                                                                        <div className="text-white  flex px-3 items-center h-[100%] text-3xl">
-                                                                                {roomID}
-                                                                        </div>
-                                                                        <button className="text-white flex justify-center items-center text-xl ">
-                                                                                <i className="fa-solid fa-copy"></i>
-                                                                        </button>
-                                                                </div>
-                                                        </CopyToClipboard>
-                                                </div>
-                                                <div className="flex flex-col  items-center gap-2 w-full h-[25vh]">
-                                                        <div className="w-full  h-full flex  justify-around items-center">
-                                                                <div className=" h-full w-[40%] bg-[#272822] flex justify-center items-center rounded-lg text-white">
-                                                                        {!myStream && !otherStream && me && me.username}
-                                                                        {myStream && (
-                                                                                <div className="flex justify-center items-center rounded-xl">
-                                                                                        <ReactPlayer
-                                                                                                playing
-                                                                                                height="100%"
-                                                                                                width="80%"
-                                                                                                url={myStream}
-                                                                                                volume={0}
-                                                                                        />
-                                                                                </div>
-                                                                        )}
-                                                                </div>
-                                                                <div className=" h-full w-[40%]  bg-[#272822] flex justify-center items-center rounded-lg text-white">
-                                                                        {!myStream &&
-                                                                                !otherStream &&
-                                                                                otherUser &&
-                                                                                otherUser.username}
-                                                                        {otherStream && (
-                                                                                <div className="flex justify-center items-center">
-                                                                                        <ReactPlayer
-                                                                                                playing
-                                                                                                height="100%"
-                                                                                                width="80%"
-                                                                                                url={otherStream}
-                                                                                                volume={1}
-                                                                                        />
-                                                                                </div>
-                                                                        )}
-                                                                </div>
-                                                        </div>
-                                                        <div className="w-full  flex flex-col">
-                                                                <div className="flex w-[100%] items-center justify-around ">
-                                                                        {endCall ? (
-                                                                                <div
-                                                                                        onClick={endVideoCall}
-                                                                                        className="bg-red-500 py-1 w-[35%] flex justify-center items-center rounded-2xl gap-3 cursor-pointer hover:bg-red-700 text-white"
-                                                                                >
-                                                                                        <i className="fa-solid fa-phone-slash"></i>
-                                                                                        End Call
-                                                                                </div>
-                                                                        ) : acceptCallButton ? (
-                                                                                <div
-                                                                                        onClick={startVideoCall}
-                                                                                        className="bg-green-500 py-1 w-[35%] flex justify-center items-center rounded-2xl gap-3 cursor-pointer hover:bg-green-700 text-white"
-                                                                                >
-                                                                                        <i className="fa-solid fa-video"></i>
-                                                                                        Accept Call
-                                                                                </div>
+                                                {/* Sidebar Section (Video + IO) */}
+                                                <div className="w-[400px] flex flex-col bg-muted/10">
+                                                        {/* Video Section */}
+                                                        <div className="h-[250px] p-2 gap-2 grid grid-cols-2 border-b border-border">
+                                                                <div className="bg-black/90 rounded-md overflow-hidden relative flex items-center justify-center border border-border">
+                                                                        {!myStream && !otherStream ? (
+                                                                                <span className="text-muted-foreground text-xs">{me?.username || "You"}</span>
                                                                         ) : (
-                                                                                <div
-                                                                                        onClick={startVideoCall}
-                                                                                        className="bg-blue-500 py-1 w-[35%] flex justify-center items-center rounded-2xl gap-3 cursor-pointer hover:bg-blue-700 text-white"
-                                                                                >
-                                                                                        <i className="fa-solid fa-video"></i>
-                                                                                        Video Call
-                                                                                </div>
+                                                                                myStream && <ReactPlayer playing height="100%" width="100%" url={myStream} muted />
                                                                         )}
-                                                                        <div
-                                                                                onClick={leaveRoom}
-                                                                                className="bg-red-500 w-[35%] py-1 flex gap-2 justify-center items-center rounded-2xl text-white text-l cursor-pointer hover:bg-red-700"
-                                                                        >
-                                                                                <i className="fa-solid fa-arrow-right-from-bracket"></i>{" "}
-                                                                                Leave Room
-                                                                        </div>
+                                                                </div>
+                                                                <div className="bg-black/90 rounded-md overflow-hidden relative flex items-center justify-center border border-border">
+                                                                        {!otherStream ? (
+                                                                                <span className="text-muted-foreground text-xs">{otherUser?.username || "Waiting..."}</span>
+                                                                        ) : (
+                                                                                <ReactPlayer playing height="100%" width="100%" url={otherStream} />
+                                                                        )}
                                                                 </div>
                                                         </div>
-                                                </div>
-                                                <div className="w-[95%] h-[35vh] flex flex-col justify-center items-center">
-                                                        <div className="w-full flex justify-center items-center h-[25%]">
-                                                                {isLoggedIn() && <NavBar socket={socket} roomID={roomID} />}
-                                                        </div>
-                                                        <div className="w-[100%] h-[100%]">
-                                                                {isLoggedIn() && (
-                                                                        <div className="w-[100%] h-full flex justify-center items-center">
-                                                                                <CodeEditor
-                                                                                        className="z-10"
-                                                                                        socket={socket}
-                                                                                        roomID={roomID}
-                                                                                        users={users}
-                                                                                />
-                                                                        </div>
-                                                                )}
-                                                        </div>
-                                                </div>
 
-                                                <div className="flex w-full h-[10vh] flex-col">
-                                                        <div className="w-full flex flex-row justify-around items-center h-full">
-                                                                <div className="h-full w-[45%]">
+                                                        {/* Controls */}
+                                                        <div className="p-2 border-b border-border flex flex-wrap gap-2 justify-center">
+                                                                {endCall ? (
+                                                                        <button onClick={endVideoCall} className="px-3 py-1 bg-destructive text-destructive-foreground rounded-md text-sm hover:bg-destructive/90 transition-colors">
+                                                                                End Call
+                                                                        </button>
+                                                                ) : acceptCallButton ? (
+                                                                        <button onClick={startVideoCall} className="px-3 py-1 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 transition-colors">
+                                                                                Accept
+                                                                        </button>
+                                                                ) : (
+                                                                        <button onClick={startVideoCall} className="px-3 py-1 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90 transition-colors">
+                                                                                Video Call
+                                                                        </button>
+                                                                )}
+                                                                <button onClick={leaveRoom} className="px-3 py-1 bg-muted hover:bg-muted/80 text-foreground rounded-md text-sm transition-colors border border-border">
+                                                                        Leave
+                                                                </button>
+                                                                <CopyToClipboard text={roomID} onCopy={() => toast.success("Copied Room ID!")}>
+                                                                        <button className="px-3 py-1 bg-muted hover:bg-muted/80 text-foreground rounded-md text-sm transition-colors border border-border flex items-center gap-2">
+                                                                                {roomID} <i className="fa-solid fa-copy"></i>
+                                                                        </button>
+                                                                </CopyToClipboard>
+                                                        </div>
+
+                                                        {/* IO Windows */}
+                                                        <div className="flex-1 flex flex-col min-h-0 p-2 gap-2">
+                                                                <div className="flex-1 min-h-0">
                                                                         <InputWindow socket={socket} roomID={roomID} />
                                                                 </div>
-                                                                <div className=" h-full w-[45%]">
+                                                                <div className="flex-1 min-h-0">
                                                                         <OutputWindow />
                                                                 </div>
                                                         </div>
                                                 </div>
                                         </div>
                                 )}
-                        </div>
-                        <div className="h-[5vh] w-[100vw] flex justify-center items-center">
-                                <Footer />
-                        </div>
+                        </main>
                 </div>
         );
 };

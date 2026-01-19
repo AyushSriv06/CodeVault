@@ -1,197 +1,98 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from "react";
-
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Button } from "../ui/button";
+import { Sheet } from "../ui/sheet";
+import { Menu, Terminal, Code2, Trophy, User } from "lucide-react";
 import Register from "../Login/Register";
-import { isLoggedIn } from "../Login/isLoggedIn";
 import Profile from "../Login/Profile";
-import { Link } from "react-router-dom";
-import { Button, colors } from "@mui/material";
+import { isLoggedIn } from "../Login/isLoggedIn";
+
 const Header = () => {
-        const [screen, setScreen] = useState(window.screen.width);
         const [isMenuOpen, setIsMenuOpen] = useState(false);
-        window.addEventListener("resize", handleResize);
-        function handleResize() {
-                setScreen(window.screen.width);
-        }
-        const toggleMenu = () => {
-                setIsMenuOpen(!isMenuOpen);
-        };
+        const location = useLocation();
+        const [scrolled, setScrolled] = useState(false);
+
+        useEffect(() => {
+                const handleScroll = () => {
+                        setScrolled(window.scrollY > 20);
+                };
+                window.addEventListener("scroll", handleScroll);
+                return () => window.removeEventListener("scroll", handleScroll);
+        }, []);
+
+        const navLinks = [
+                { name: "Practice", path: "/practiceproblems", icon: <Code2 className="h-4 w-4 mr-2" /> },
+                { name: "Compiler", path: "/onlinecompiler", icon: <Terminal className="h-4 w-4 mr-2" /> },
+                { name: "Rooms", path: "/room", icon: <User className="h-4 w-4 mr-2" /> }, // Icon placeholder
+                { name: "Leaderboard", path: "/leaderboard", icon: <Trophy className="h-4 w-4 mr-2" /> },
+        ];
+
         return (
-                <div className=" w-full h-full flex justify-between items-center bg-[#2f3136] text-white  z-10 shadow-md ">
-                        <div className="w-full h-full flex flex-row justify-between items-center bg-[#2f3136]">
-                                {screen > 1024 ? (
-                                        <div className="bg-[#2f3136] w-[100%] flex justify-between items-center text-nowrap px-5">
-                                                <div className="icon w-[15%] flex justify-center items-center rounded-[10px] bg-[#fb690a] p-1">
-                                                        <Link to="/">
-                                                                <div className="text-white font-bold text-xl lg:text-2xl">
-                                                                        CodeVault
-                                                                </div>
-                                                        </Link>
-                                                </div>
+                <header className={`fixed top-0 z-50 w-full border-b border-white/10 transition-all duration-300 ${scrolled ? "bg-black/50 backdrop-blur-xl" : "bg-transparent"}`}>
+                        <div className="container flex h-16 max-w-7xl mx-auto items-center justify-between px-4 md:px-6">
 
-                                                <div className="bg-[#2f3136] w-[50%] gap-2 flex justify-around items-center text-nowrap">
-                                                        <Link to="/practiceproblems">
-                                                                <Button
-                                                                        variant="contained"
-                                                                        color="success"
-                                                                        sx={{
-                                                                                backgroundColor: "#16a34a",
-                                                                                borderRadius: 2,
-                                                                        }}
-                                                                >
-                                                                        Practice Problems
-                                                                </Button>
-                                                        </Link>
-                                                        <Link to="/onlinecompiler">
-                                                                <Button
-                                                                        variant="contained"
-                                                                        color="success"
-                                                                        sx={{
-                                                                                backgroundColor: "#16a34a",
-                                                                                borderRadius: 2,
-                                                                        }}
-                                                                >
-                                                                        Online Compiler
-                                                                </Button>
-                                                        </Link>
-                                                        <Link to="/room">
-                                                                <Button
-                                                                        variant="contained"
-                                                                        color="success"
-                                                                        sx={{
-                                                                                backgroundColor: "#16a34a",
-                                                                                borderRadius: 2,
-                                                                        }}
-                                                                >
-                                                                        Code Room
-                                                                </Button>
-                                                        </Link>
-                                                        <Link to="/leaderboard">
-                                                                <Button
-                                                                        variant="contained"
-                                                                        color="success"
-                                                                        sx={{
-                                                                                backgroundColor: "#16a34a",
-                                                                                borderRadius: 2,
-                                                                        }}
-                                                                >
-                                                                        Leaderboard
-                                                                </Button>
-                                                        </Link>
+                                {/* Logo */}
+                                <div className="flex items-center gap-2">
+                                        <Link to="/" className="flex items-center gap-2 font-bold text-xl tracking-tight">
+                                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                                                        <Code2 className="h-5 w-5" />
                                                 </div>
-                                                <div className={`w-[${isLoggedIn() ? "10%" : "15%"}] flex justify-end`}>
-                                                        <div>{isLoggedIn() ? <Profile /> : <Register />}</div>
-                                                </div>
+                                                <span className="hidden md:inline-block">CodeVault</span>
+                                        </Link>
+                                </div>
+
+                                {/* Desktop Nav */}
+                                <nav className="hidden md:flex items-center gap-1">
+                                        {navLinks.map((link) => (
+                                                <Link key={link.path} to={link.path}>
+                                                        <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className={`text-zinc-400 hover:text-zinc-100 hover:bg-white/5 data-[active=true]:text-zinc-100 data-[active=true]:bg-white/10`}
+                                                                data-active={location.pathname === link.path}
+                                                        >
+                                                                {link.icon}
+                                                                {link.name}
+                                                        </Button>
+                                                </Link>
+                                        ))}
+                                </nav>
+
+                                {/* Auth & Mobile Toggle */}
+                                <div className="flex items-center gap-4">
+                                        <div className="hidden md:flex">
+                                                {isLoggedIn() ? <Profile /> : <Register />}
                                         </div>
-                                ) : (
-                                        <>
-                                                {isMenuOpen ? (
-                                                        <>
-                                                                <div
-                                                                        className="fixed left-0 w-full h-full z-[1999] bg-[rgba(0,0,0,0.5)]  top-0"
-                                                                        onClick={toggleMenu}
-                                                                ></div>
-                                                                <div className="fixed z-[2000] left-[10%] top-[20%] w-[10%] pl-8">
-                                                                        <i
-                                                                                className="fa-solid fa-xmark ml-auto text-3xl"
-                                                                                onClick={toggleMenu}
-                                                                        ></i>
-                                                                </div>
 
-                                                                <div className="fixed w-[70%] h-[50%] left-[15%] top-[25%] flex justify-center  flex-col p-4 gap-2  items-center bg-[#272822]  z-[2000] shadow-sm">
-                                                                        <div className="text-xl py-1 flex flex-col justify-around h-full items-center border border-solid w-full">
-                                                                                <div className="w-full flex justify-center items-center h-[20%]">
-                                                                                        <div className="rounded-xl border p-2 bg-green-600">
-                                                                                                <Link to="/">Home</Link>
-                                                                                        </div>
-                                                                                </div>
-                                                                                <div className="w-full flex justify-center items-center h-[20%]">
-                                                                                        <div className="rounded-xl border p-2 bg-green-600">
-                                                                                                <Link to="/practiceproblems">
-                                                                                                        Practice Problems
-                                                                                                </Link>
-                                                                                        </div>
-                                                                                </div>
-                                                                                <div className="w-full flex justify-center items-center h-[20%]">
-                                                                                        <div className="rounded-xl border p-2 bg-green-600">
-                                                                                                <Link to="/onlinecompiler">
-                                                                                                        Online Compiler
-                                                                                                </Link>
-                                                                                        </div>
-                                                                                </div>
-                                                                                <div className="w-full flex justify-center items-center h-[20%]">
-                                                                                        <div className="rounded-xl border p-2 bg-green-600">
-                                                                                                <Link to="/room">
-                                                                                                        Code Room
-                                                                                                </Link>
-                                                                                        </div>
-                                                                                </div>
-                                                                                <div className="w-full flex justify-center items-center h-[20%]">
-                                                                                        <div className="rounded-xl border p-2 bg-green-600">
-                                                                                                <Link to="leaderboard">
-                                                                                                        Leaderboard
-                                                                                                </Link>
-                                                                                        </div>
-                                                                                </div>
-                                                                        </div>
-                                                                </div>
-                                                                <div className="flex w-full h-full justify-between items-center px-4">
-                                                                        <div className="w-[10%]">
-                                                                                <i
-                                                                                        className="fa-solid fa-bars ml-auto text-3xl"
-                                                                                        onClick={toggleMenu}
-                                                                                ></i>
-                                                                        </div>
-
-                                                                        <div className="w-[50%]  flex justify-center items-center">
-                                                                                <div className="bg-[#fb690a] w-full p-2 rounded-xl flex justify-center items-center">
-                                                                                        <Link to="/">
-                                                                                                <div className="text-white font-bold text-xl">
-                                                                                                        CodeVault
-                                                                                                </div>
-                                                                                        </Link>
-                                                                                </div>
-                                                                        </div>
-                                                                        <div className="w-[20%]">
-                                                                                <div>
-                                                                                        {isLoggedIn() ? (
-                                                                                                <Profile />
-                                                                                        ) : (
-                                                                                                <Register />
-                                                                                        )}
-                                                                                </div>
-                                                                        </div>
-                                                                </div>
-                                                        </>
-                                                ) : (
-                                                        <div className="flex w-full h-full justify-between items-center px-4">
-                                                                <div className="w-[10%]">
-                                                                        <i
-                                                                                className="fa-solid fa-bars ml-auto text-3xl"
-                                                                                onClick={toggleMenu}
-                                                                        ></i>
-                                                                </div>
-
-                                                                <div className="w-[50%]  flex justify-center items-center">
-                                                                        <div className="bg-[#fb690a] w-full p-2 rounded-xl flex justify-center items-center">
-                                                                                <Link to="/">
-                                                                                        <div className="text-white font-bold text-xl">
-                                                                                                CodeVault
-                                                                                        </div>
-                                                                                </Link>
-                                                                        </div>
-                                                                </div>
-                                                                <div className="w-[20%]">
-                                                                        <div>
-                                                                                {isLoggedIn() ? <Profile /> : <Register />}
-                                                                        </div>
-                                                                </div>
-                                                        </div>
-                                                )}
-                                        </>
-                                )}
+                                        <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMenuOpen(true)}>
+                                                <Menu className="h-6 w-6" />
+                                        </Button>
+                                </div>
                         </div>
-                </div>
+
+                        {/* Mobile Sheet */}
+                        <Sheet isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} side="right">
+                                <div className="flex flex-col gap-6 mt-8">
+                                        <Link to="/" onClick={() => setIsMenuOpen(false)} className="text-lg font-bold">
+                                                CodeVault
+                                        </Link>
+                                        <div className="flex flex-col gap-2">
+                                                {navLinks.map((link) => (
+                                                        <Link key={link.path} to={link.path} onClick={() => setIsMenuOpen(false)}>
+                                                                <Button variant="ghost" className="w-full justify-start text-lg">
+                                                                        {link.icon}
+                                                                        {link.name}
+                                                                </Button>
+                                                        </Link>
+                                                ))}
+                                        </div>
+                                        <div className="mt-4">
+                                                {isLoggedIn() ? <Profile /> : <Register />}
+                                        </div>
+                                </div>
+                        </Sheet>
+                </header>
         );
 };
 

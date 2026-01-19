@@ -6,11 +6,11 @@ import InputWindow from "../InputWindow/InputWindow";
 
 const RightPart = () => {
 	return (
-		<div className='flex  w-full h-[45%] lg:h-[97%] lg:items-center items-start justify-around lg:flex-col lg:w-[45%] '>
-			<div className='w-[45%] h-[50%] lg:h-[40%] lg:w-[90%]'>
+		<div className='flex flex-col w-full h-full gap-4'>
+			<div className='flex-1 min-h-0'>
 				<InputWindow />
 			</div>
-			<div className='w-[45%] h-[50%] lg:h-[40%] lg:w-[90%]'>
+			<div className='flex-1 min-h-0'>
 				<OutputWindow />
 			</div>
 		</div>

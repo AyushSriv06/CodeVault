@@ -2,66 +2,67 @@
 import { React, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import Settings from "../../pages/Settings/Settings";
+import {
+        DropdownMenu,
+        DropdownMenuItem,
+        DropdownMenuLabel,
+        DropdownMenuSeparator,
+} from "../../components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar"; // Using Shadcn Avatar logic or standard img
+import { LogOut, User, Settings as SettingsIcon, Code } from "lucide-react";
+
 const Profile = () => {
         const [isDropdownOpen, setIsDropdownOpen] = useState(false);
         const email = localStorage.getItem("email");
         const username = localStorage.getItem("username");
-        const firstLetter = email?.charAt(0);
+        const firstLetter = email?.charAt(0).toUpperCase(); // Better fallback
         const avatarUrl = `https://ui-avatars.com/api/?name=${firstLetter}&background=random`;
-        const toggleDropdown = () => {
-                setIsDropdownOpen(!isDropdownOpen);
-        };
         const frontendURL = import.meta.env.VITE_FRONTEND_URL;
+
         const handleLogout = () => {
                 localStorage.clear();
-                toast.success("Logging out , bye bye", { autoClose: 2000 });
+                toast.success("Logging out...", { autoClose: 2000 });
                 setTimeout(() => {
-                        window.location.href = frontendURL;
-                }, 2000);
+                        window.location.href = frontendURL || "/"; // Fallback to root if env not set
+                }, 1000); // Faster redirect
         };
+
         return (
-                <div className="h-full w-full">
-                        <div className="profile">
-                                <div className="profile-info flex justify-end" onClick={toggleDropdown}>
-                                        <img
-                                                className="h-10 rounded-[50%] border-white border-[2px] cursor-pointer"
-                                                src={avatarUrl}
-                                                alt="userProfile"
-                                        />
-                                </div>
-                                {isDropdownOpen && (
-                                        <div>
-                                                <div
-                                                        className="fixed w-full h-full z-[1999] bg-[rgba(0,0,0,0.5)] left-0 top-0"
-                                                        onClick={toggleDropdown}
-                                                ></div>
-                                                <div className="fixed w-[70%] lg:w-[40%] lg:text-xl h-[50%] left-[15%] lg:left-[30%] top-[25%] flex justify-center  flex-col p-4 gap-2  items-center bg-[#272822]  z-[2000] shadow-sm border-solid">
-                                                        <div className="flex items-center justify-center w-full h-[20%] border-b-[white] border-b border-solid">
-                                                                {username}
-                                                        </div>
-                                                        <div className="flex items-center justify-center w-full h-[20%] border-b-[white] border-b border-solid">
-                                                                {email}
-                                                        </div>
-                                                        <div className="flex items-center justify-center w-full h-[20%] border-b-[white] border-b border-solid hover:bg-[#16a34a] bg-green-600">
-                                                                <Link to={"/submissions"}>View Submissions</Link>
-                                                        </div>
-                                                        <div className="flex items-center justify-center w-full h-[20%] border-b-[white] border-b border-solid hover:bg-[#908383] bg-gray-600">
-                                                                <Link to={"/settings"}>Settings</Link>
-                                                        </div>
-                                                        <div
-                                                                className="flex items-center justify-center w-full h-[20%] border-b-[white] border-b border-solid"
-                                                                onClick={handleLogout}
-                                                        >
-                                                                <button className="w-full h-full hover:bg-[rgba(255,0,0,0.8)] bg-red-600">
-                                                                        Log Out
-                                                                </button>
-                                                        </div>
-                                                </div>
-                                        </div>
-                                )}
+                <DropdownMenu
+                        open={isDropdownOpen}
+                        onOpenChange={setIsDropdownOpen}
+                        trigger={
+                                <button className="rounded-full border-2 border-transparent hover:border-primary transition-all focus:outline-none">
+                                        <Avatar className="h-10 w-10 border-2 border-transparent group-hover:border-primary transition-all">
+                                                <AvatarImage src={avatarUrl} alt="userProfile" />
+                                                <AvatarFallback>{firstLetter}</AvatarFallback>
+                                        </Avatar>
+                                </button>
+                        }
+                >
+                        <div className="px-2 py-1.5">
+                                <p className="text-sm font-medium leading-none">{username}</p>
+                                <p className="text-xs leading-none text-muted-foreground mt-1">{email}</p>
                         </div>
-                </div>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>
+                                <Link to={"/submissions"} className="w-full flex items-center">
+                                        <Code className="mr-2 h-4 w-4" />
+                                        <span>Submissions</span>
+                                </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                                <Link to={"/settings"} className="w-full flex items-center">
+                                        <SettingsIcon className="mr-2 h-4 w-4" />
+                                        <span>Settings</span>
+                                </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500 focus:bg-red-100/10">
+                                <LogOut className="mr-2 h-4 w-4" />
+                                <span>Log out</span>
+                        </DropdownMenuItem>
+                </DropdownMenu>
         );
 };
 

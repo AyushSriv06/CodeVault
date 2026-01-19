@@ -10,18 +10,34 @@ import { useSelector, useDispatch } from "react-redux";
 import { updateOutput } from "../../redux/slices/outputSlice";
 import { updateToggleOutput } from "../../redux/slices/toggleOutput";
 import { updatePracticeStatus } from "../../redux/slices/practiceStatusSlice";
+import {
+        Table,
+        TableBody,
+        TableCell,
+        TableHead,
+        TableHeader,
+        TableRow,
+} from "../ui/table";
+import { Badge } from "../ui/badge";
+import { CheckCircle2 } from "lucide-react";
+
 const ProblemList = ({ response }) => {
         const output = useSelector((state) => state.output?.value);
         const dispatch = useDispatch();
         const [questions, setQuestions] = useState([]);
         const attemptedQuestions = response?.data?.attemptedQuestions || [];
+        const [loading, setLoading] = useState(true);
+
         useEffect(() => {
                 const fetchData = async () => {
                         try {
+                                setLoading(true);
                                 const questionsData = await fetchAllQuestions();
                                 setQuestions(questionsData);
                         } catch (error) {
                                 console.error("Error fetching questions:", error);
+                        } finally {
+                                setLoading(false);
                         }
                 };
 
@@ -34,50 +50,59 @@ const ProblemList = ({ response }) => {
                 dispatch(updateToggleOutput(false));
         };
 
-        const DifficultyTextStyles = (question) => {
-                return question.diff === "easy"
-                        ? "text-green-600"
-                        : question.diff === "medium"
-                        ? "text-yellow-500"
-                        : "text-red-600";
+        const getDifficultyBadge = (diff) => {
+                switch (diff) {
+                        case "easy":
+                                return <Badge className="bg-green-500/10 text-green-500 hover:bg-green-500/20 border-green-500/20">{capitalizeString(diff)}</Badge>;
+                        case "medium":
+                                return <Badge className="bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20 border-yellow-500/20">{capitalizeString(diff)}</Badge>;
+                        case "hard":
+                                return <Badge className="bg-red-500/10 text-red-500 hover:bg-red-500/20 border-red-500/20">{capitalizeString(diff)}</Badge>;
+                        default:
+                                return <Badge variant="outline">{capitalizeString(diff)}</Badge>;
+                }
         };
 
-        const QuestionsArray = questions.map((question) => (
-                <tr key={question.id} className="text-white font-bold text-center border-b-2 border-gray-400">
-                        <td className="w-[10%] p-4">
-                                <div className="w-4 h-4 flex justify-center items-center rounded-sm border-green-800 border-2 bg-[#202225] mx-auto">
-                                        {attemptedQuestions.includes(question.id) ? `✅` : ``}
-                                </div>
-                        </td>
-                        <td className="w-[70%] p-4 text-left hover:text-[#485fc7]">
-                                <Link onClick={resetConfetti} to={`/practiceproblems/questions/${question.id}`}>
-                                        {question.title}
-                                </Link>
-                        </td>
-                        <td className={`w-[20%] p-4 ${DifficultyTextStyles(question)}`}>
-                                {capitalizeString(question.diff)}
-                        </td>
-                </tr>
-        ));
+        if (loading) {
+                return <Loading />;
+        }
 
         return (
-                <div className="bg-[#2f3136] rounded-lg w-full h-full overflow-y-scroll">
-                        {questions ? (
-                                <table className="w-full border-collapse border-gray-400 text-center">
-                                        <thead>
-                                                <tr className="text-white border-b-2 text-xl font-bold">
-                                                        <td className="w-[10%] p-4">Status</td>
-                                                        <td className="w-[70%] p-4 text-left">Problem</td>
-                                                        <td className="w-[20%] p-4">Difficulty</td>
-                                                </tr>
-                                        </thead>
-                                        <tbody>{QuestionsArray}</tbody>
-                                </table>
-                        ) : (
-                                <div>
-                                        <Loading />
-                                </div>
-                        )}
+                <div className="w-full h-full rounded-md border border-border bg-card overflow-hidden">
+                        <div className="overflow-auto h-full"> {/* Allow scrolling inside container */}
+                                <Table>
+                                        <TableHeader>
+                                                <TableRow>
+                                                        <TableHead className="w-[100px]">Status</TableHead>
+                                                        <TableHead>Problem</TableHead>
+                                                        <TableHead className="w-[100px] text-right">Difficulty</TableHead>
+                                                </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                                {questions.map((question) => (
+                                                        <TableRow key={question.id}>
+                                                                <TableCell>
+                                                                        {attemptedQuestions.includes(question.id) && (
+                                                                                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                                                                        )}
+                                                                </TableCell>
+                                                                <TableCell className="font-medium">
+                                                                        <Link
+                                                                                onClick={resetConfetti}
+                                                                                to={`/practiceproblems/questions/${question.id}`}
+                                                                                className="hover:text-primary transition-colors hover:underline"
+                                                                        >
+                                                                                {question.title}
+                                                                        </Link>
+                                                                </TableCell>
+                                                                <TableCell className="text-right">
+                                                                        {getDifficultyBadge(question.diff)}
+                                                                </TableCell>
+                                                        </TableRow>
+                                                ))}
+                                        </TableBody>
+                                </Table>
+                        </div>
                 </div>
         );
 };

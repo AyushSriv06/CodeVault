@@ -4,35 +4,35 @@ import React from "react";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import { Link } from "react-router-dom";
+import { Button } from "../../components/ui/button";
+import { AlertTriangle } from "lucide-react";
 
 function ErrorPage() {
         return (
-                <>
-                        <div className="h-[8vh] w-[100vw] flex justify-center items-center">
-                                <Header />
-                        </div>
-                        <div className="h-full w-full">
-                                <div className="w-full h-[83.5vh] lg:h-[87vh] lg:flex-row flex flex-col-reverse justify-around items-center px-12 text-wrap">
-                                        <div className="w-[100%] h-[50%] flex flex-col lg:flex lg:justify-center">
-                                                <div className="text-white font-sans text-4xl p-5 lg:text-6xl">
-                                                        Oops, this page doesn't exist
-                                                </div>
-                                                <div className="text-white font-sans text-2xl p-5 lg:text-4xl">
-                                                        Go back to{" "}
-                                                        <Link className="text-yellow-500" to={"/"}>
-                                                                home page
-                                                        </Link>
+                <div className="min-h-screen bg-background flex flex-col">
+                        <Header />
+                        <main className="flex-1 flex items-center justify-center p-6">
+                                <div className="text-center space-y-6 max-w-md mx-auto">
+                                        <div className="flex justify-center">
+                                                <div className="p-4 rounded-full bg-muted">
+                                                        <AlertTriangle className="h-12 w-12 text-yellow-500" />
                                                 </div>
                                         </div>
-                                        <div className="w-[100%] h-[50%] flex justify-center items-center">
-                                                <img src="../../public/Error.png" alt="Error404" />
+                                        <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
+                                                404 Not Found
+                                        </h1>
+                                        <p className="text-xl text-muted-foreground">
+                                                Oops, this page doesn't exist.
+                                        </p>
+                                        <div className="pt-4">
+                                                <Button asChild size="lg">
+                                                        <Link to="/">Go back home</Link>
+                                                </Button>
                                         </div>
                                 </div>
-                        </div>
-                        <div className="h-[5vh] w-[100vw] flex justify-center items-center">
-                                <Footer />
-                        </div>
-                </>
+                        </main>
+                        <Footer />
+                </div>
         );
 }
 

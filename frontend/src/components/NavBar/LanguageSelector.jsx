@@ -3,11 +3,18 @@
 // src/components/LanguageSelector.js
 
 import React, { useEffect } from "react";
-import "./LanguageSelector.css";
 import { useSelector, useDispatch } from "react-redux";
 import { updateLanguage } from "../../redux/slices/languageSlice";
 import { updateOutput } from "../../redux/slices/outputSlice";
 import { updateUserInput } from "../../redux/slices/userInputSlice";
+import {
+        Select,
+        SelectContent,
+        SelectItem,
+        SelectTrigger,
+        SelectValue,
+} from "../ui/select";
+
 const LanguageSelector = ({ socket, roomID }) => {
         const language = useSelector((state) => state.language?.value);
         const dispatch = useDispatch();
@@ -18,26 +25,27 @@ const LanguageSelector = ({ socket, roomID }) => {
                 { name: "Python", value: "python" },
         ];
 
+        const handleLanguageChange = (value) => {
+                dispatch(updateLanguage(value));
+                dispatch(updateOutput(""));
+                dispatch(updateUserInput(""));
+                socket && socket.emit("languageChange", { language: value, roomID: roomID });
+        };
+
         return (
-                <div className="custom-select-container">
-                        <select
-                                className="select-language"
-                                id="language"
-                                value={language}
-                                onChange={(e) => {
-                                        dispatch(updateLanguage(e.target.value));
-                                        dispatch(updateOutput(""));
-                                        dispatch(updateUserInput(""));
-                                        socket &&
-                                                socket.emit("languageChange", { language: e.target.value, roomID: roomID });
-                                }}
-                        >
-                                {languageOptions.map((language) => (
-                                        <option key={language.value} value={language.value}>
-                                                {language.name}
-                                        </option>
-                                ))}
-                        </select>
+                <div className="w-[120px]">
+                        <Select value={language} onValueChange={handleLanguageChange}>
+                                <SelectTrigger className="h-8 bg-zinc-800 border-zinc-700 text-zinc-100">
+                                        <SelectValue placeholder="Language" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                        {languageOptions.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                        {option.name}
+                                                </SelectItem>
+                                        ))}
+                                </SelectContent>
+                        </Select>
                 </div>
         );
 };

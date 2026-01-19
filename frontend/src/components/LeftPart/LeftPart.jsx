@@ -6,11 +6,13 @@ import CodeEditor from "../CodeEditor/CodeEditor";
 
 const LeftPart = () => {
 	return (
-		<div className='flex flex-col mt-4 lg:mt-0 w-full h-[58%] lg:h-[99%]'>
-			<div className='w-[96%] h-[20%] lg:h-[10%]'>
+		<div className='flex flex-col w-full h-full gap-2'>
+			<div className='flex-none'>
 				<NavBar />
 			</div>
-			<CodeEditor />
+			<div className='flex-1 min-h-0 border rounded-md overflow-hidden'>
+				<CodeEditor />
+			</div>
 		</div>
 	);
 };

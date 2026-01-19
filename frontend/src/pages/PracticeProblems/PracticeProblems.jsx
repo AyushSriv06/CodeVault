@@ -21,22 +21,26 @@ const PracticeProblems = () => {
                 }
         }, []);
         return (
-                <>
-                        <div className="h-[8vh] w-[100vw] flex justify-center items-center">
-                                <Header />
-                        </div>
-                        <div className="h-[75vh] lg:h-[87vh] lg:flex-row  lg:gap-10 flex flex-col gap-3 justify-center items-center">
-                                <div className="w-[95%] h-[30%] lg:w-[25%] lg:h-[50%]">
-                                        <Stats response={response} />
+                <div className="min-h-screen bg-background flex flex-col">
+                        <Header />
+
+                        <main className="flex-1 container mx-auto px-4 py-8 mt-16 flex flex-col lg:flex-row gap-6">
+                                {/* Stats Sidebar */}
+                                <div className="w-full lg:w-1/4">
+                                        <div className="sticky top-24">
+                                                <Stats response={response} />
+                                        </div>
                                 </div>
-                                <div className="w-[95%] h-[60%] lg:w-[65%] lg:h-[60%]">
+
+                                {/* Problem List */}
+                                <div className="w-full lg:w-3/4">
+                                        <h2 className="text-3xl font-bold tracking-tight mb-6">Problems</h2>
                                         <ProblemList response={response} />
                                 </div>
-                        </div>
-                        <div className="h-[5vh] w-[100vw] flex justify-center items-center">
-                                <Footer />
-                        </div>
-                </>
+                        </main>
+
+                        <Footer />
+                </div>
         );
 };
 

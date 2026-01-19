@@ -5,180 +5,170 @@ import Footer from "../../components/Footer/Footer";
 import { getUserData } from "../../services/getUserData";
 import { getLeaderBoard } from "../../services/getLeaderBoard";
 import Loading from "../../components/Loading/Loading";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "../../components/ui/table";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogDescription,
+} from "../../components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import { Avatar } from "../../components/ui/avatar"; // Assuming you might create this, or basic img for now
+import { Crown } from "lucide-react";
+
 function LeaderBoard() {
 	const [data, setData] = useState();
-	const [toggle, setToggle] = useState(false);
-	const [user, setUser] = useState();
+	const [selectedUser, setSelectedUser] = useState(null);
+	const [userData, setUserData] = useState();
+	const [loadingUser, setLoadingUser] = useState(false);
+
 	useEffect(() => {
 		async function fetchData() {
-			const leaderboardData = await getLeaderBoard();
-			// Sort the data by the length of attemptedQuestions
-			leaderboardData.sort(
-				(a, b) => b.attemptedQuestions.length - a.attemptedQuestions.length
-			);
-			setData(leaderboardData);
+			try {
+				const leaderboardData = await getLeaderBoard();
+				leaderboardData.sort(
+					(a, b) => b.attemptedQuestions.length - a.attemptedQuestions.length
+				);
+				setData(leaderboardData);
+			} catch (error) {
+				console.error("Failed to fetch leaderboard", error);
+			}
 		}
 		fetchData();
 	}, []);
 
 	useEffect(() => {
-		async function getUser() {
-			if (toggle != false) {
-				const res = await getUserData(toggle);
-				setUser(res.data);
+		async function fetchUser() {
+			if (selectedUser) {
+				setLoadingUser(true);
+				try {
+					const res = await getUserData(selectedUser);
+					setUserData(res.data);
+				} catch (error) {
+					console.error("Failed to fetch user data", error);
+				} finally {
+					setLoadingUser(false);
+				}
+			} else {
+				setUserData(null);
 			}
 		}
-		getUser();
-	}, [toggle]);
-
-	function handleClick(email) {
-		setToggle(email);
-	}
+		fetchUser();
+	}, [selectedUser]);
 
 	function getDaysSince(dateString) {
 		const currentDate = new Date();
 		const createDate = new Date(dateString);
-
-		// Calculate the difference in milliseconds
 		const differenceMs = currentDate - createDate;
-
-		// Convert milliseconds to days
 		const daysSince = Math.floor(differenceMs / (1000 * 60 * 60 * 24));
-
 		return daysSince;
 	}
 
 	return (
-		<>
-			<div className='h-[8vh] w-[100vw] flex justify-center items-center'>
-				<Header />
-			</div>
-			<div className='h-[75vh] lg:h-[87vh] w-full flex justify-center items-center '>
-				{data ? (
-					<div className='h-full w-full flex justify-center items-center'>
-						<table className='w-[90%] lg:w-[40%] h-[80%] text-white border-4 rounded-md border-separate border-red-400 flex justify-center items-center flex-col bg-[#32085e] '>
-							<thead className='text-voilet-700 text-xl w-full '>
-								<tr className='w-full flex justify-around items-center py-5'>
-									<th className=' flex justify-center items-center w-[60%] pb-2 border-b-2 border-red-400 '>
-										Username
-									</th>
-									<th className='flex justify-center items-center border-b-2  w-[20%] pb-2 border-red-400 '>
-										Rank
-									</th>
-								</tr>
-							</thead>
-							<tbody className='flex flex-col h-full w-full overflow-y-scroll'>
-								{data.map((entry, index) => (
-									<tr
-										key={index}
-										className='flex justify-between items-center w-full h-[20%] min-h-[20%]'>
-										<td
-											className={`hover:text-purple-600 gap-2 h-full w-[60%] mx-auto flex items-center justify-start hover:cursor-pointer`}>
-											<img
-												onClick={() => {
-													handleClick(entry.email);
-												}}
-												className='h-10 rounded-[50%] cursor-pointer'
-												src={`https://ui-avatars.com/api/?name=${entry.email.charAt(
-													0
-												)}&background=random`}
-												alt='userProfile'
-											/>
-											<div
-												onClick={() => {
-													handleClick(entry.email);
-												}}>
-												{entry.username}
-											</div>
-											{index + 1 === 1 ? (
-												<i className='fa-solid fa-crown text-[#FFD700] flex items-center'></i>
-											) : index + 1 === 2 ? (
-												<i className='fa-solid fa-crown text-[#EAECEC] flex items-center'></i>
-											) : index + 1 === 3 ? (
-												<i className='fa-solid fa-crown text-[#CD7F32] flex items-center'></i>
-											) : null}
-										</td>
-										<td className='text-center  h-full w-[30%] flex justify-center items-center '>
-											{index + 1}
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-						{toggle && (
-							<div
-								onClick={() => {
-									handleClick(false);
-								}}
-								className='z-2999 fixed top-0 left-0 w-full h-full flex justify-center items-center  bg-[#000] bg-opacity-50 '>
-								<div className='bg-[#2f3136] bg-opacity-90 w-[90%] h-[40%] lg:w-[35%] lg:h-[50%] flex-col flex justify-evenly items-center  rounded-2xl text-white'>
-									{user ? (
-										<div className='w-full h-full flex justify-start flex-col gap-12 items-center'>
-											<div className='py-3'>
-												<img
-													className='h-20 rounded-[50%] cursor-pointer'
-													src={`https://ui-avatars.com/api/?name=${user.email.charAt(
-														0
-													)}&background=random`}
-													alt='userProfile'
-												/>
-											</div>
-											<div className='w-[95%] gap-2 border border-red-200 rounded-md text-[#fff] flex-col flex justify-center  text-xl p-3 leading-relaxed'>
-												<table className='w-full h-full'>
-													<tr className='flex justify-start lg:justify-center gap-5 items-center w-full'>
-														<td className='text-left'>
-															<div className='text-red-400 '>Name :</div>
-														</td>
-														<td className='text-right'>
-															<span className='text-red-100'>
-																{user.username}
-															</span>
-														</td>
-													</tr>
-													<tr className='flex justify-start lg:justify-center gap-5 items-center w-full'>
-														<td className='text-left'>
-															<div className='text-red-400'>Email :</div>
-														</td>
-														<td className='text-right'>
-															<span className='text-red-100 text-sm lg:text-xl'>
-																{user.email}
-															</span>
-														</td>
-													</tr>
-													<tr className='flex justify-start lg:justify-center gap-5 items-center w-full'>
-														<td className='text-left'>
-															<div className='text-red-400'>
-																CodeVault Member since :
-															</div>
-														</td>
-														<td className='text-right'>
-															<span className='text-red-100'>
-																{getDaysSince(user.createdAt)} days
-															</span>
-														</td>
-													</tr>
-												</table>
-											</div>
-										</div>
-									) : (
-										<div className='h-[88vh]'>
-											<Loading />
-										</div>
-									)}
+		<div className="min-h-screen bg-background flex flex-col">
+			<Header />
+			<main className="flex-1 container mx-auto px-4 py-8 mt-16 flex flex-col items-center">
+				<div className="w-full max-w-4xl">
+					<div className="mb-6">
+						<h1 className="text-3xl font-bold tracking-tight">Leaderboard</h1>
+						<p className="text-muted-foreground">Top performers in CodeVault.</p>
+					</div>
+
+					{data ? (
+						<div className="rounded-md border border-border bg-card">
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead className="w-[100px]">Rank</TableHead>
+										<TableHead>User</TableHead>
+										<TableHead className="text-right">Solved</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{data.map((entry, index) => (
+										<TableRow
+											key={index}
+											className="cursor-pointer hover:bg-muted/50 transition-colors"
+											onClick={() => setSelectedUser(entry.email)}
+										>
+											<TableCell className="font-medium">
+												<div className="flex items-center gap-2">
+													{index + 1}
+													{index === 0 && <Crown className="h-4 w-4 text-yellow-500" />}
+													{index === 1 && <Crown className="h-4 w-4 text-gray-400" />}
+													{index === 2 && <Crown className="h-4 w-4 text-amber-700" />}
+												</div>
+											</TableCell>
+											<TableCell>
+												<div className="flex items-center gap-3">
+													<Avatar className="h-8 w-8">
+														<AvatarImage src={`https://ui-avatars.com/api/?name=${entry.email.charAt(0)}&background=random`} alt={entry.username} />
+														<AvatarFallback>{entry.email.charAt(0).toUpperCase()}</AvatarFallback>
+													</Avatar>
+													<span className="font-medium">{entry.username}</span>
+												</div>
+											</TableCell>
+											<TableCell className="text-right">
+												{entry.attemptedQuestions?.length || 0}
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						</div>
+					) : (
+						<div className="w-full h-64 flex items-center justify-center">
+							<Loading />
+						</div>
+					)}
+				</div>
+			</main>
+
+			<Dialog open={!!selectedUser} onOpenChange={(open) => !open && setSelectedUser(null)}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>User Profile</DialogTitle>
+					</DialogHeader>
+					{loadingUser ? (
+						<div className="py-8 flex justify-center"><Loading /></div>
+					) : userData ? (
+						<div className="flex flex-col items-center gap-6 py-4">
+							<img
+								src={`https://ui-avatars.com/api/?name=${userData.email.charAt(0)}&background=random`}
+								alt={userData.username}
+								className="h-24 w-24 rounded-full border-4 border-muted"
+							/>
+							<div className="w-full space-y-4">
+								<div className="flex justify-between border-b pb-2">
+									<span className="text-muted-foreground">Username</span>
+									<span className="font-medium">{userData.username}</span>
+								</div>
+								<div className="flex justify-between border-b pb-2">
+									<span className="text-muted-foreground">Email</span>
+									<span className="font-medium">{userData.email}</span>
+								</div>
+								<div className="flex justify-between border-b pb-2">
+									<span className="text-muted-foreground">Member Since</span>
+									<span className="font-medium">{getDaysSince(userData.createdAt)} days ago</span>
 								</div>
 							</div>
-						)}
-					</div>
-				) : (
-					<div className='text-white text-3xl max-[1024px]:text-xl'>
-						Leaderboard not available
-					</div>
-				)}
-			</div>
-			<div className='h-[5vh] w-[100vw] flex justify-center items-center'>
-				<Footer />
-			</div>
-		</>
+						</div>
+					) : (
+						<div className="py-4 text-center text-muted-foreground">User not found</div>
+					)}
+				</DialogContent>
+			</Dialog>
+
+			<Footer />
+		</div>
 	);
 }
 

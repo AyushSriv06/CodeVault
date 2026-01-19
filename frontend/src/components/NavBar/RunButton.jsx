@@ -5,11 +5,10 @@ import { runCompilerCode, runPracticeCode } from "../../services/runCodeApi";
 import { isLoggedIn } from "../Login/isLoggedIn";
 import { useLocation, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import "./RunButton.css";
+import { Button } from "../ui/button";
+import { Play } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateOutput } from "../../redux/slices/outputSlice";
-import { updateToggleOutput } from "../../redux/slices/toggleOutput";
-import { updatePracticeStatus } from "../../redux/slices/practiceStatusSlice";
+
 const RunButton = () => {
         const [isLoading, setIsLoading] = useState(false);
         const [userEmail, setUserEmail] = useState("");
@@ -21,6 +20,7 @@ const RunButton = () => {
         const userInput = useSelector((state) => state.userInput?.value);
         const language = useSelector((state) => state.language?.value);
         const dispatch = useDispatch();
+
         useEffect(() => {
                 if (isLoggedIn()) {
                         const email = localStorage.getItem("email");
@@ -93,10 +93,17 @@ const RunButton = () => {
                         setIsLoading(false);
                 }
         };
+
         return (
-                <button className="css-button-arrow--green" onClick={handleClick} disabled={isLoading}>
-                        {isLoading ? "Running..." : "Run"}
-                </button>
+                <Button
+                        onClick={handleClick}
+                        disabled={isLoading}
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700 text-white font-medium"
+                >
+                        <Play className="w-4 h-4 mr-2 fill-current" />
+                        {isLoading ? "Running..." : "Run Code"}
+                </Button>
         );
 };
 

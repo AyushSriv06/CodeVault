@@ -1,10 +1,11 @@
-/* eslint-disable no-unused-vars */
-import React, { useEffect, useState } from "react";
-import "@fortawesome/fontawesome-svg-core";
-import { useSelector, useDispatch } from "react-redux";
+import React, { useState } from "react";
+import { Button } from "../ui/button";
+import { Settings as SettingsIcon } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
 import { updateEditorTheme } from "../../redux/slices/editorThemeSlice";
 import { updateFont } from "../../redux/slices/fontSlice";
 import { updateTabSize } from "../../redux/slices/tabSizeSlice";
+
 const Settings = () => {
         const font = useSelector((state) => state.font?.value);
         const editorTheme = useSelector((state) => state.editorTheme?.value);
@@ -44,12 +45,14 @@ const Settings = () => {
 
         return (
                 <div>
-                        <button
-                                className="h-[100%] w-[100%] text-[white] cursor-pointer bg-neutral-800 border-[none]"
+                        <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={toggle}
+                                className="text-zinc-400 hover:text-zinc-100"
                         >
-                                <i className="fas fa-cog fa-xl"></i>
-                        </button>
+                                <SettingsIcon className="h-5 w-5" />
+                        </Button>
                         {toggleSetting && (
                                 <div>
                                         <div
