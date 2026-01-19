@@ -8,20 +8,26 @@ import RightPart from "../../components/RightPart/RightPart";
 
 function OnlineCompiler() {
 	return (
-		<div className="min-h-screen bg-background flex flex-col">
+		<div className="min-h-screen bg-black text-white relative flex flex-col overflow-hidden selection:bg-purple-500/30">
 			<Header />
 
-			<main className="flex-1 pt-14 h-[calc(100vh-theme(spacing.16))] overflow-hidden">
+			{/* Background Gradients */}
+			<div className="fixed inset-0 z-0 pointer-events-none">
+				<div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px]" />
+				<div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px]" />
+			</div>
+
+			<main className="flex-1 pt-14 h-[calc(100vh-theme(spacing.16))] overflow-hidden relative z-10">
 				{/* Flexbox fallback for broken react-resizable-panels */}
 				<div className="flex h-full flex-row">
-					<div className="w-1/2 h-full p-4 overflow-y-auto border-r border-border bg-card">
+					<div className="w-1/2 h-full p-4 overflow-y-auto border-r border-white/10 bg-black/40 backdrop-blur-sm">
 						<LeftPart />
 					</div>
 
 					{/* Resizer Visual (Static for now) */}
-					<div className="w-1 bg-border hover:bg-primary transition-colors cursor-col-resize hidden md:block" />
+					<div className="w-1 bg-white/10 hover:bg-primary transition-colors cursor-col-resize hidden md:block" />
 
-					<div className="w-1/2 h-full p-4 bg-background">
+					<div className="w-1/2 h-full p-4 bg-black/40 backdrop-blur-sm">
 						<RightPart />
 					</div>
 				</div>

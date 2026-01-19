@@ -21,10 +21,16 @@ const PracticeProblems = () => {
                 }
         }, []);
         return (
-                <div className="min-h-screen bg-background flex flex-col">
+                <div className="min-h-screen bg-black text-white relative flex flex-col overflow-hidden selection:bg-purple-500/30">
                         <Header />
 
-                        <main className="flex-1 container mx-auto px-4 py-8 mt-16 flex flex-col lg:flex-row gap-6">
+                        {/* Background Gradients */}
+                        <div className="fixed inset-0 z-0 pointer-events-none">
+                                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px]" />
+                                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px]" />
+                        </div>
+
+                        <main className="flex-1 container mx-auto px-4 py-8 mt-16 flex flex-col lg:flex-row gap-6 relative z-10">
                                 {/* Stats Sidebar */}
                                 <div className="w-full lg:w-1/4">
                                         <div className="sticky top-24">

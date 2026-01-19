@@ -1,16 +1,33 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "../ui/button";
 import { Settings as SettingsIcon } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateEditorTheme } from "../../redux/slices/editorThemeSlice";
 import { updateFont } from "../../redux/slices/fontSlice";
 import { updateTabSize } from "../../redux/slices/tabSizeSlice";
+import {
+        Dialog,
+        DialogContent,
+        DialogDescription,
+        DialogHeader,
+        DialogTitle,
+        DialogTrigger,
+} from "../ui/dialog";
+import {
+        Select,
+        SelectContent,
+        SelectItem,
+        SelectTrigger,
+        SelectValue,
+} from "../ui/select";
+import { Label } from "../ui/label";
 
 const Settings = () => {
         const font = useSelector((state) => state.font?.value);
         const editorTheme = useSelector((state) => state.editorTheme?.value);
         const tabSize = useSelector((state) => state.tabSize?.value);
         const dispatch = useDispatch();
+
         const fontSizes = ["12px", "14px", "16px", "18px", "20px", "22px", "24px"];
         const tabSizes = [2, 4];
         const themeOptions = [
@@ -24,129 +41,85 @@ const Settings = () => {
                 { value: "solarized_light", name: "Solarized Light" },
                 { value: "terminal", name: "Terminal" },
         ];
-        const [toggleSetting, setToggleSetting] = useState(false);
-        const toggle = () => {
-                setToggleSetting(!toggleSetting);
-        };
-        const handleInputChange = (event) => {
-                const { name, value } = event.target;
-                switch (name) {
-                        case "font":
-                                dispatch(updateFont(value));
-                                break;
-                        case "editorTheme":
-                                dispatch(updateEditorTheme(value));
-                                break;
-                        case "tabSize":
-                                dispatch(updateTabSize(value));
-                                break;
-                }
-        };
 
         return (
-                <div>
-                        <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={toggle}
-                                className="text-zinc-400 hover:text-zinc-100"
-                        >
-                                <SettingsIcon className="h-5 w-5" />
-                        </Button>
-                        {toggleSetting && (
-                                <div>
-                                        <div
-                                                className="fixed w-full h-full bg-[rgba(0,0,0,0.5)] z-[1000] left-0 top-0"
-                                                onClick={toggle}
-                                        ></div>
-                                        <div className=" fixed left-[10%] lg:w-[50%] lg:left-[25%]  top-[20%] overflow-y-scroll z-[1001] w-[80%] h-[60%] bg-[#2f3136] border shadow-[0_0_10px_rgba(0,0,0,0.2)] px-5 py-1 rounded-[10px] border-solid border-[#ccc]">
-                                                <label className="bg-[#2f3136] flex items-center w-full h-[28%]  justify-between py-1">
-                                                        <div className="w-[55%] h-10">
-                                                                <p className="bg-[#2f3136] text-md">Code Font:</p>
-                                                                <p className="bg-[#2f3136] text-sm">
-                                                                        Choose the font size of the editor.
-                                                                </p>
-                                                        </div>
-                                                        <select
-                                                                className="h-10 flex justify-center items-center bg-[rgb(95,139,173)] text-[white] text-md w-[45%] cursor-pointer px-2 rounded-[10px]"
-                                                                name="font"
-                                                                value={font}
-                                                                onChange={handleInputChange}
-                                                        >
+                <Dialog>
+                        <DialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-zinc-100">
+                                        <SettingsIcon className="h-5 w-5" />
+                                </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px] bg-zinc-950 border-zinc-800 text-zinc-100">
+                                <DialogHeader>
+                                        <DialogTitle>Editor Settings</DialogTitle>
+                                        <DialogDescription className="text-zinc-400">
+                                                Customize your coding environment.
+                                        </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-6 py-4">
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                                <Label htmlFor="font" className="text-right text-zinc-300">
+                                                        Font Size
+                                                </Label>
+                                                <Select
+                                                        value={font}
+                                                        onValueChange={(val) => dispatch(updateFont(val))}
+                                                >
+                                                        <SelectTrigger className="col-span-3 bg-zinc-900 border-zinc-700 text-zinc-100">
+                                                                <SelectValue placeholder="Select font size" />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="bg-zinc-900 border-zinc-700 text-zinc-100">
                                                                 {fontSizes.map((size) => (
-                                                                        <option
-                                                                                className="cursor-pointer"
-                                                                                key={size}
-                                                                                value={size}
-                                                                        >
+                                                                        <SelectItem key={size} value={size}>
                                                                                 {size}
-                                                                        </option>
+                                                                        </SelectItem>
                                                                 ))}
-                                                        </select>
-                                                </label>
-
-                                                <label className="bg-[#2f3136] flex w-full items-center h-[28%]  justify-between py-1">
-                                                        <div className="w-[55%] h-10">
-                                                                <p className="bg-[#2f3136] text-md">Editor Theme:</p>
-                                                                <p className="bg-[#2f3136] text-sm ">
-                                                                        Choose a theme for the editor.
-                                                                </p>
-                                                        </div>
-                                                        <select
-                                                                className="h-10 flex justify-center items-center bg-[rgb(95,139,173)] text-[white] text-md w-[45%] cursor-pointer px-2 rounded-[10px]"
-                                                                name="editorTheme"
-                                                                value={editorTheme}
-                                                                onChange={handleInputChange}
-                                                        >
+                                                        </SelectContent>
+                                                </Select>
+                                        </div>
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                                <Label htmlFor="theme" className="text-right text-zinc-300">
+                                                        Theme
+                                                </Label>
+                                                <Select
+                                                        value={editorTheme}
+                                                        onValueChange={(val) => dispatch(updateEditorTheme(val))}
+                                                >
+                                                        <SelectTrigger className="col-span-3 bg-zinc-900 border-zinc-700 text-zinc-100">
+                                                                <SelectValue placeholder="Select theme" />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="bg-zinc-900 border-zinc-700 text-zinc-100 h-[200px]">
                                                                 {themeOptions.map((theme) => (
-                                                                        <option
-                                                                                className="cursor-pointer"
-                                                                                key={theme.value}
-                                                                                value={theme.value}
-                                                                        >
+                                                                        <SelectItem key={theme.value} value={theme.value}>
                                                                                 {theme.name}
-                                                                        </option>
+                                                                        </SelectItem>
                                                                 ))}
-                                                        </select>
-                                                </label>
-
-                                                <label className="bg-[#2f3136] flex items-center w-full h-[28%]  justify-between py-1">
-                                                        <div className="w-[55%] h-10">
-                                                                <p className="bg-[#2f3136] text-md">Tab Size:</p>
-                                                                <p className="bg-[#2f3136] text-sm">
-                                                                        Update the default tab size of the editor.
-                                                                </p>
-                                                        </div>
-                                                        <select
-                                                                className="h-10 flex justify-center items-center bg-[rgb(95,139,173)] text-[white] text-md w-[45%] cursor-pointer px-2 rounded-[10px]"
-                                                                name="tabSize"
-                                                                value={tabSize}
-                                                                onChange={handleInputChange}
-                                                        >
+                                                        </SelectContent>
+                                                </Select>
+                                        </div>
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                                <Label htmlFor="tabSize" className="text-right text-zinc-300">
+                                                        Tab Size
+                                                </Label>
+                                                <Select
+                                                        value={tabSize?.toString()}
+                                                        onValueChange={(val) => dispatch(updateTabSize(Number(val)))}
+                                                >
+                                                        <SelectTrigger className="col-span-3 bg-zinc-900 border-zinc-700 text-zinc-100">
+                                                                <SelectValue placeholder="Select tab size" />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="bg-zinc-900 border-zinc-700 text-zinc-100">
                                                                 {tabSizes.map((size) => (
-                                                                        <option
-                                                                                className="cursor-pointer"
-                                                                                key={size}
-                                                                                value={size}
-                                                                        >
-                                                                                {size}
-                                                                        </option>
+                                                                        <SelectItem key={size} value={size.toString()}>
+                                                                                {size} Spaces
+                                                                        </SelectItem>
                                                                 ))}
-                                                        </select>
-                                                </label>
-                                                <div className="w-full h-[15%] flex justify-center items-center py-2">
-                                                        <button
-                                                                onClick={toggle}
-                                                                className="w-[40%] lg:w-[20%] h-10 cursor-pointer font-bold transition-all duration-[0.3s] ease-[ease] text-[#d90429]  rounded-[5px] border-4 border-solid border-[#d90429]
-                                                        bg-white hover:bg-[#d90429] hover:text-[#fff] font-sans"
-                                                        >
-                                                                Close
-                                                        </button>
-                                                </div>
-                                        </div>{" "}
+                                                        </SelectContent>
+                                                </Select>
+                                        </div>
                                 </div>
-                        )}
-                </div>
+                        </DialogContent>
+                </Dialog>
         );
 };
 

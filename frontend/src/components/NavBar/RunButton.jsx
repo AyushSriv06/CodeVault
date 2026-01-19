@@ -8,6 +8,9 @@ import { toast } from "react-toastify";
 import { Button } from "../ui/button";
 import { Play } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
+import { updateOutput } from "../../redux/slices/outputSlice";
+import { updateToggleOutput } from "../../redux/slices/toggleOutput";
+import { updatePracticeStatus } from "../../redux/slices/practiceStatusSlice";
 
 const RunButton = () => {
         const [isLoading, setIsLoading] = useState(false);

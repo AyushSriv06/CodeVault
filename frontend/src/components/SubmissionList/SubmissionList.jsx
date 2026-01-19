@@ -4,26 +4,35 @@ import {
 	onlineCompilerSubmissions,
 	practiceProblemsSubmissions,
 } from "../../services/submissionsApi";
-import "./SubmissionList.css";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Calendar, CheckCircle, XCircle } from "lucide-react";
+import { Badge } from "../ui/badge";
+
 const SubmissionList = () => {
-	const [toggleSubmission, setToggleSubmission] = useState("practiceproblems");
 	const email = localStorage.getItem("email");
-	const [compilersubmissions, setCompilerSubmissions] = useState(null);
-	const [practicesubmissions, setPracticeSubmissions] = useState(null);
-	function handleToggle(name) {
-		setToggleSubmission(name);
-		if (name === "practiceproblems") {
-			practiceProblemsSubmissions(email).then((res) => {
-				setPracticeSubmissions([...res].reverse());
-			});
-		}
-		if (name === "onlinecompiler") {
-			onlineCompilerSubmissions(email).then((res) => {
-				setCompilerSubmissions([...res].reverse());
-			});
-		}
-	}
+	const [compilerSubmissions, setCompilerSubmissions] = useState(null);
+	const [practiceSubmissions, setPracticeSubmissions] = useState(null);
+
+	const getPracticeSubmissions = () => {
+		practiceProblemsSubmissions(email).then((res) => {
+			setPracticeSubmissions([...res].reverse());
+		});
+	};
+
+	const getCompilerSubmissions = () => {
+		onlineCompilerSubmissions(email).then((res) => {
+			setCompilerSubmissions([...res].reverse());
+		});
+	};
+
+	useEffect(() => {
+		getPracticeSubmissions();
+		getCompilerSubmissions();
+	}, []);
+
 	const formatDateTime = (dateTime) => {
 		const date = new Date(dateTime);
 		const options = { month: "long", day: "numeric", year: "numeric" };
@@ -35,154 +44,137 @@ const SubmissionList = () => {
 		});
 		return `${dateString} at ${timeString}`;
 	};
-	useEffect(() => {
-		practiceProblemsSubmissions(email).then((res) => {
-			setPracticeSubmissions([...res].reverse());
-		});
-		onlineCompilerSubmissions(email).then((res) => {
-			setCompilerSubmissions([...res].reverse());
-		});
-	}, []);
+
 	return (
-		<>
-			<div className='z-[1] w-full h-full flex flex-col justify-center items-center'>
-				<div className='flex w-full items-center justify-center lg:justify-evenly lg:w-[75%]'>
-					<button
-						className={`border w-[45%] lg:w-[35%] bg-[#179b77] border-solid border-[white] hover:bg-[#179b77] py-2 ${
-							toggleSubmission === "practiceproblems"
-								? "bg-[#179b77]"
-								: "bg-[#435359] text-[#bab5b5]"
-						}`}
-						onClick={() => handleToggle("practiceproblems")}>
-						Practice Problems Submissions
-					</button>
-					<button
-						className={`border w-[45%] lg:w-[35%] bg-[#179b77]  border-solid border-[white] hover:bg-[#179b77] py-2 ${
-							toggleSubmission === "onlinecompiler"
-								? `bg-[#179b77]`
-								: `bg-[#435359] text-[#bab5b5]`
-						}`}
-						onClick={() => handleToggle("onlinecompiler")}>
-						Online Compiler & Code Room Submissions
-					</button>
-				</div>
-				{toggleSubmission === "practiceproblems" ? (
-					<div className='onlinecompilersub w-[90%] lg:w-[75%]'>
-						{practicesubmissions && practicesubmissions.length > 0 ? (
-							practicesubmissions.map((submission, index) => {
-								const i = submission.output?.indexOf("Test case 1");
-								const trimmed_result = submission.output?.substring(i);
-								return (
-									<div
-										key={submission._id}
-										className='xyzabcd w-full  border-b border-solid pb-4'>
-										<div className='abcd text-sm w-full'>
-											<span className='text-sm lg:text-lg'>{index + 1}] </span>
-											<span className='text-sm lg:text-lg'>
-												{" "}
-												Created : {formatDateTime(submission.createdAt)}
-											</span>
+		<div className="w-full space-y-6">
+			<Tabs defaultValue="practice" className="w-full flex flex-col items-center">
+				<TabsList className="grid w-full max-w-md grid-cols-2 bg-zinc-900 border border-zinc-800">
+					<TabsTrigger value="practice" className="data-[state=active]:bg-zinc-800 text-zinc-400 data-[state=active]:text-zinc-100">
+						Practice Problems
+					</TabsTrigger>
+					<TabsTrigger value="compiler" className="data-[state=active]:bg-zinc-800 text-zinc-400 data-[state=active]:text-zinc-100">
+						Online Compiler
+					</TabsTrigger>
+				</TabsList>
+
+				<TabsContent value="practice" className="w-full mt-6 space-y-4">
+					{practiceSubmissions && practiceSubmissions.length > 0 ? (
+						practiceSubmissions.map((submission, index) => {
+							const i = submission.output?.indexOf("Test case 1");
+							const trimmed_result = i !== -1 ? submission.output?.substring(i) : submission.output;
+							return (
+								<Card key={submission._id} className="bg-zinc-900/50 border-zinc-800 backdrop-blur-sm overflow-hidden">
+									<CardHeader className="bg-zinc-900/80 border-b border-zinc-800 py-3 px-4">
+										<div className="flex justify-between items-center">
+											<div className="flex items-center text-zinc-400 text-sm">
+												<span className="font-mono text-zinc-500 mr-2">#{practiceSubmissions.length - index}</span>
+												<Calendar className="w-4 h-4 mr-2 opacity-70" />
+												{formatDateTime(submission.createdAt)}
+											</div>
+											<Badge variant={submission.status === "Success" ? "default" : "destructive"} className={submission.status === "Success" ? "bg-green-500/10 text-green-500 hover:bg-green-500/20" : "bg-red-500/10 text-red-500 hover:bg-red-500/20"}>
+												{submission.status}
+											</Badge>
 										</div>
-										<div className='flex flex-col justify-between items-center gap-2 w-full'>
-											<div className='w-[99%]'>
+									</CardHeader>
+									<CardContent className="p-0">
+										<div className="grid grid-cols-1 lg:grid-cols-2 lg:divide-x divide-zinc-800">
+											<div className="p-0 max-h-[300px] overflow-auto custom-scrollbar">
 												<SyntaxHighlighter
-													customStyle={{
-														width: "100%",
-														fontSize: 12,
-														"@media (min-width: 768px)": {
-															fontSize: "1.5em",
-														},
-													}}
-													className='xyz'
 													language={submission.language}
-													wrapLines={true}>
+													style={vscDarkPlus}
+													customStyle={{
+														margin: 0,
+														padding: "1rem",
+														background: "transparent",
+														fontSize: "0.9rem",
+														lineHeight: "1.5",
+													}}
+													wrapLines={true}
+												>
 													{submission.code}
 												</SyntaxHighlighter>
 											</div>
-
-											<div className='flex flex-col bcd w-full justify-center border overflow-scroll py-4'>
+											<div className="p-4 bg-zinc-950/30 flex flex-col space-y-2">
 												<div>
-													<span className='text-[#4ec9b0]'>Status :</span>{" "}
-													<span className='text-[#ce9178] '>
-														{submission.status}
-													</span>
-												</div>
-												<div>
-													<span className='text-[#4ec9b0]'>Output :</span>{" "}
-													<span className='text-[#ce9178] '>
+													<span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider block mb-1">Output</span>
+													<div className="font-mono text-sm text-zinc-300 bg-zinc-950/50 p-3 rounded border border-zinc-800 whitespace-pre-wrap">
 														{trimmed_result}
-													</span>
+													</div>
 												</div>
 											</div>
 										</div>
+									</CardContent>
+								</Card>
+							);
+						})
+					) : (
+						<EmptyState message="No practice submissions yet." />
+					)}
+				</TabsContent>
+
+				<TabsContent value="compiler" className="w-full mt-6 space-y-4">
+					{compilerSubmissions && compilerSubmissions.length > 0 ? (
+						compilerSubmissions.map((submission, index) => (
+							<Card key={submission._id} className="bg-zinc-900/50 border-zinc-800 backdrop-blur-sm overflow-hidden">
+								<CardHeader className="bg-zinc-900/80 border-b border-zinc-800 py-3 px-4">
+									<div className="flex justify-between items-center">
+										<div className="flex items-center text-zinc-400 text-sm">
+											<span className="font-mono text-zinc-500 mr-2">#{compilerSubmissions.length - index}</span>
+											<Calendar className="w-4 h-4 mr-2 opacity-70" />
+											{formatDateTime(submission.createdAt)}
+										</div>
 									</div>
-								);
-							})
-						) : (
-							<div className='flex w-full h-full justify-center items-center text-white lg:text-2xl'>
-								No submissions made yet{"    "}&nbsp;&nbsp;
-								<i className='fa-solid fa-heart-crack text-red-500'></i>
-							</div>
-						)}
-					</div>
-				) : (
-					<div className='onlinecompilersub w-[90%] lg:w-[75%]'>
-						{compilersubmissions && compilersubmissions.length > 0 ? (
-							compilersubmissions.map((submission, index) => (
-								<div
-									key={submission._id}
-									className='xyzabcd w-full  border-b border-solid pb-4'>
-									<div className='abcd text-sm w-full'>
-										<span className='text-sm lg:text-lg'>{index + 1}] </span>
-										<span className='text-sm lg:text-lg'>
-											{" "}
-											Created : {formatDateTime(submission.createdAt)}
-										</span>
-									</div>
-									<div className='flex flex-col justify-between gap-2 w-full'>
-										<div className=''>
+								</CardHeader>
+								<CardContent className="p-0">
+									<div className="grid grid-cols-1 lg:grid-cols-2 lg:divide-x divide-zinc-800">
+										<div className="p-0 max-h-[300px] overflow-auto custom-scrollbar">
 											<SyntaxHighlighter
-												customStyle={{
-													width: "100%",
-													fontSize: 12,
-													"@media (min-width: 768px)": {
-														fontSize: "1.5em",
-													},
-												}}
-												className='xyz'
 												language={submission.language}
-												wrapLines={true}>
+												style={vscDarkPlus}
+												customStyle={{
+													margin: 0,
+													padding: "1rem",
+													background: "transparent",
+													fontSize: "0.9rem",
+													lineHeight: "1.5",
+												}}
+												wrapLines={true}
+											>
 												{submission.code}
 											</SyntaxHighlighter>
 										</div>
-										<div className='flex flex-col bcd justify-center border py-4'>
+										<div className="p-4 bg-zinc-950/30 flex flex-col space-y-4">
 											<div>
-												<span className='text-[#4ec9b0]'>Input :</span>{" "}
-												<span className='text-[#ce9178] text-wrap'>
-													{submission.input}
-												</span>
+												<span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider block mb-1">Input</span>
+												<div className="font-mono text-sm text-zinc-400 bg-zinc-950/50 p-2 rounded border border-zinc-800 whitespace-pre-wrap min-h-[40px]">
+													{submission.input || <span className="text-zinc-700 italic">No input</span>}
+												</div>
 											</div>
-											<div className=''>
-												<span className='text-[#4ec9b0]'>Output :</span>{" "}
-												<span className='text-[#ce9178] '>
+											<div>
+												<span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider block mb-1">Output</span>
+												<div className="font-mono text-sm text-zinc-300 bg-zinc-950/50 p-3 rounded border border-zinc-800 whitespace-pre-wrap">
 													{submission.output}
-												</span>
+												</div>
 											</div>
 										</div>
 									</div>
-								</div>
-							))
-						) : (
-							<div className='flex w-full h-full justify-center items-center text-white lg:text-2xl'>
-								No submissions made yet{"    "}&nbsp;&nbsp;
-								<i className='fa-solid fa-heart-crack text-red-500'></i>
-							</div>
-						)}
-					</div>
-				)}
-			</div>
-		</>
+								</CardContent>
+							</Card>
+						))
+					) : (
+						<EmptyState message="No compiler submissions yet." />
+					)}
+				</TabsContent>
+			</Tabs>
+		</div>
 	);
 };
+
+const EmptyState = ({ message }) => (
+	<div className="flex flex-col items-center justify-center py-16 text-zinc-500">
+		<XCircle className="w-12 h-12 mb-4 opacity-20" />
+		<p className="text-lg">{message}</p>
+	</div>
+);
 
 export default SubmissionList;

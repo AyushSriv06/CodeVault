@@ -1,9 +1,8 @@
-/* eslint-disable react/prop-types */
-/* eslint-disable no-inner-declarations */
-/* eslint-disable no-unused-vars */
-import React, { useEffect, useState } from "react";
-import ProgressBar from "../ProgressBar/ProgressBar";
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Progress } from "../ui/progress";
 import { isLoggedIn } from "../Login/isLoggedIn";
+
 export default function Stats({ response }) {
         const problemsSolved = {
                 easy: response?.data?.attempts?.easy || 0,
@@ -16,49 +15,65 @@ export default function Stats({ response }) {
                 hard: 1,
         };
 
+        const calculatePercentage = (solved, total) => {
+                if (!total) return 0;
+                return Math.min(100, Math.max(0, (solved / total) * 100));
+        };
+
         return (
-                <div className="font-bold p-4 w-full h-full  bg-black rounded-lg ">
-                        {isLoggedIn() ? (
-                                <div></div>
-                        ) : (
-                                <div className="text-red-400 w-full flex justify-center items-center">
-                                        Please Login to View/Update Stats
-                                </div>
-                        )}
-                        <div className="text-white  flex justify-center text-xl lg:text-2xl">Stats</div>
-                        <div className="h-[80%] w-full flex flex-col py-2">
-                                <div className="flex lg:flex-col justify-between h-[33%]">
-                                        <div className="flex w-[40%] justify-between lg:w-full">
-                                                <div className="text-green-600 flex  ">Easy</div>
-                                                <div className="text-green-600 flex  justify-end">
-                                                        {problemsSolved.easy}/{TotalProblems.easy}
-                                                </div>
+                <Card className="bg-black/40 border-white/10 backdrop-blur-md w-full">
+                        <CardHeader className="pb-2">
+                                <CardTitle className="text-xl font-bold text-white">Your Progress</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                                {!isLoggedIn() && (
+                                        <div className="text-red-400 text-sm bg-red-500/10 p-2 rounded-md border border-red-500/20 text-center mb-4">
+                                                Please login to track stats
                                         </div>
-                                        <ProgressBar progress={problemsSolved.easy / TotalProblems.easy} color="green" />
-                                </div>
-                                <div className="flex lg:flex-col justify-between h-[33%]">
-                                        <div className="flex w-[40%] justify-between lg:w-full">
-                                                {" "}
-                                                <div className="text-yellow-500 flex ">Medium</div>
-                                                <div className="text-yellow-500 flex  justify-end">
-                                                        {problemsSolved.medium}/{TotalProblems.medium}
-                                                </div>
+                                )}
+
+                                <div className="space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                                <span className="text-green-500 font-medium">Easy</span>
+                                                <span className="text-zinc-400">
+                                                        {problemsSolved.easy} <span className="text-zinc-600">/ {TotalProblems.easy}</span>
+                                                </span>
                                         </div>
-                                        <ProgressBar
-                                                progress={problemsSolved.medium / TotalProblems.medium}
-                                                color="yellow"
+                                        <Progress
+                                                value={calculatePercentage(problemsSolved.easy, TotalProblems.easy)}
+                                                className="bg-green-500/10"
+                                                indicatorColor="bg-green-500"
                                         />
                                 </div>
-                                <div className="flex lg:flex-col justify-between h-[33%]">
-                                        <div className="flex w-[40%] justify-between lg:w-full">
-                                                <div className="text-red-500 flex ">Hard</div>
-                                                <div className="text-red-500 flex  justify-end">
-                                                        {problemsSolved.hard}/{TotalProblems.hard}
-                                                </div>
+
+                                <div className="space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                                <span className="text-yellow-500 font-medium">Medium</span>
+                                                <span className="text-zinc-400">
+                                                        {problemsSolved.medium} <span className="text-zinc-600">/ {TotalProblems.medium}</span>
+                                                </span>
                                         </div>
-                                        <ProgressBar progress={problemsSolved.hard / TotalProblems.hard} color="red" />
+                                        <Progress
+                                                value={calculatePercentage(problemsSolved.medium, TotalProblems.medium)}
+                                                className="bg-yellow-500/10"
+                                                indicatorColor="bg-yellow-500"
+                                        />
                                 </div>
-                        </div>
-                </div>
+
+                                <div className="space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                                <span className="text-red-500 font-medium">Hard</span>
+                                                <span className="text-zinc-400">
+                                                        {problemsSolved.hard} <span className="text-zinc-600">/ {TotalProblems.hard}</span>
+                                                </span>
+                                        </div>
+                                        <Progress
+                                                value={calculatePercentage(problemsSolved.hard, TotalProblems.hard)}
+                                                className="bg-red-500/10"
+                                                indicatorColor="bg-red-500"
+                                        />
+                                </div>
+                        </CardContent>
+                </Card>
         );
 }

@@ -68,7 +68,7 @@ const ProblemList = ({ response }) => {
         }
 
         return (
-                <div className="w-full h-full rounded-md border border-border bg-card overflow-hidden">
+                <div className="w-full h-full rounded-md border border-white/10 bg-black/40 backdrop-blur-md overflow-hidden shadow-xl">
                         <div className="overflow-auto h-full"> {/* Allow scrolling inside container */}
                                 <Table>
                                         <TableHeader>
