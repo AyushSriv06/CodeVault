@@ -15,33 +15,29 @@ const RightPart = () => {
 	}, [toggleOutput]);
 
 	return (
-		<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
-			<div className="flex items-center px-2 border-b border-white/10 bg-transparent">
-				<TabsList className="bg-transparent border-b-0 h-9 p-0 rounded-none">
+		<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 min-h-0 flex flex-col gap-3">
+			<div className="flex items-center">
+				<TabsList className="bg-zinc-900/40 border border-white/10 backdrop-blur-md rounded-lg p-1 h-10">
 					<TabsTrigger
 						value="input"
-						className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:bg-transparent data-[state=active]:text-blue-400 px-4 h-9 text-zinc-400"
+						className="rounded-md data-[state=active]:bg-white/10 data-[state=active]:text-white px-6 h-8 text-zinc-400 hover:text-zinc-200 transition-colors"
 					>
 						Input
 					</TabsTrigger>
 					<TabsTrigger
 						value="output"
-						className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:bg-transparent data-[state=active]:text-blue-400 px-4 h-9 text-zinc-400"
+						className="rounded-md data-[state=active]:bg-white/10 data-[state=active]:text-white px-6 h-8 text-zinc-400 hover:text-zinc-200 transition-colors"
 					>
 						Output
 					</TabsTrigger>
 				</TabsList>
 			</div>
 
-			<TabsContent value="input" className="flex-1 p-0 m-0 relative h-full">
-				<div className="absolute inset-0">
-					<InputWindow />
-				</div>
+			<TabsContent value="input" className="data-[state=active]:flex flex-col flex-1 h-full p-0 m-0 min-h-0 overflow-hidden outline-none">
+				<InputWindow socket={null} roomID={null} />  {/* Need to pass socket if needed, but previously wasn't in component properly unless passed through? I see InputWindow component didn't receive props in the original RightPart.jsx */}
 			</TabsContent>
-			<TabsContent value="output" className="flex-1 p-0 m-0 relative h-full">
-				<div className="absolute inset-0">
-					<OutputWindow />
-				</div>
+			<TabsContent value="output" className="data-[state=active]:flex flex-col flex-1 h-full p-0 m-0 min-h-0 overflow-hidden outline-none">
+				<OutputWindow />
 			</TabsContent>
 		</Tabs>
 	);
