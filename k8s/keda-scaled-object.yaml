@@ -1,0 +1,18 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: codevault-worker-scaler
+  namespace: codevault-exec
+spec:
+  scaleTargetRef:
+    name: codevault-worker
+  minReplicaCount: 0
+  maxReplicaCount: 10
+  pollingInterval: 5 # Polling Redis every 5 seconds
+  cooldownPeriod: 60 # Wait 60s before scaling down
+  triggers:
+  - type: redis
+    metadata:
+      address: redis-service.codevault-exec.svc.cluster.local:6379
+      listName: bull:executionQueue:wait
+      listLength: "5"
