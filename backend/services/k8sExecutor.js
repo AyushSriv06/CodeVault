@@ -48,14 +48,14 @@ async function waitForJobCompletion(jobName) {
                     name: jobName,
                     namespace: NAMESPACE
                 });
-                const job = response; // in v1.x, response data is usually direct, but let's check structure
                 
-                // Usually it's response (or response.body if we use older syntax, but v1.x returns direct object or wraps it)
-                const jobData = response.status ? response : (response.body || response);
+                // In @kubernetes/client-node 1.x, the response is usually the V1Job object itself 
+                // if configured with the default fetch-based client, or it might have a .body property.
+                const job = response.status?.conditions ? response : (response.body || response);
 
-                if (jobData?.status?.conditions) {
-                    const completeCondition = jobData.status.conditions.find(c => c.type === "Complete" && c.status === "True");
-                    const failedCondition = jobData.status.conditions.find(c => c.type === "Failed" && c.status === "True");
+                if (job?.status?.conditions) {
+                    const completeCondition = job.status.conditions.find(c => c.type === "Complete" && c.status === "True");
+                    const failedCondition = job.status.conditions.find(c => c.type === "Failed" && c.status === "True");
 
                     if (completeCondition) {
                         clearTimeout(timeout);
@@ -65,7 +65,6 @@ async function waitForJobCompletion(jobName) {
                         clearTimeout(timeout);
                         clearInterval(interval);
                         resolve("failed");
-                        // We do not reject because 'failed' means code crashed or timed out, which we treat via exitCode
                     }
                 }
             } catch (err) {
@@ -86,7 +85,6 @@ async function getJobLogs(jobName) {
             labelSelector: `job-name=${jobName}`
         });
 
-        // Extract items depending on v1.x response wrapping
         const items = podList.items || podList.body?.items;
 
         if (items && items.length > 0) {
@@ -95,7 +93,6 @@ async function getJobLogs(jobName) {
                 name: podName,
                 namespace: NAMESPACE
             });
-            // Extract logs depending on v1.x response wrapping
             logs = (typeof logRes === 'string') ? logRes : (logRes.body || logRes);
         }
     } catch (err) {
