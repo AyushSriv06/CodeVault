@@ -11,7 +11,11 @@ const getSubmissionsRoute = require("./routes/getSubmissionsRoute");
 const getStatsRoute = require("./routes/getStatsRoute");
 const getUserDataRoute = require("./routes/getUserDataRoute");
 const googleAuthRoute = require("./routes/googleAuthRoute");
+const jobStatusRoute = require("./routes/jobStatusRoute");
 const socketController = require("./controller/socketController");
+
+// Initialize queue worker
+require("./worker/executionWorker");
 const leaderboard = require("./routes/leaderBoardRoute");
 dotenv.config();
 const app = express();
@@ -25,6 +29,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/run", runCodeRoute);
+app.use("/job", jobStatusRoute);
 app.use("/practiceproblems", practiceProblemsRoute);
 app.use("/register", authRoute);
 app.use("/submissions", submissionsRoute);
