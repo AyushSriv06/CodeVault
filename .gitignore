@@ -4,3 +4,5 @@ node_modules/
 coverage/
 dist/
 build/
+minikube-linux-amd64
+kubectl

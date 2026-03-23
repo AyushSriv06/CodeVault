@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codevault-worker
+  namespace: codevault-exec
+  labels:
+    app: codevault-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: codevault-worker
+  template:
+    metadata:
+      labels:
+        app: codevault-worker
+    spec:
+      serviceAccountName: codevault-executor
+      containers:
+      - name: codevault-worker
+        image: codevault-backend:latest
+        imagePullPolicy: Never
+        command: ["node", "app.js"] # In production, you would extract worker to run independently
+        env:
+        - name: EXECUTOR_MODE
+          value: "k8s"
+        - name: EXECUTION_NAMESPACE
+          value: "codevault-exec"
+        - name: REDIS_HOST
+          value: "redis-service"
+        - name: DB_URL
+          value: "mongodb://mongo-service:27017/codevault"
