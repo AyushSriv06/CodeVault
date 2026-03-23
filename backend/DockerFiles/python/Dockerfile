@@ -1,6 +1,12 @@
-FROM alpine:3.9
-WORKDIR /usr/py
-RUN apk add python3
+FROM python:3.12-alpine
 
-# docker build -t py:v1 . 
-# run this command while in the python directory
+# Create non-root user
+RUN adduser -D -u 1000 runner
+
+WORKDIR /app
+COPY runner.sh /app/runner.sh
+RUN chmod +x /app/runner.sh
+
+USER runner
+
+ENTRYPOINT ["/app/runner.sh"]

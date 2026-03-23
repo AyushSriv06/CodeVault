@@ -1,12 +1,12 @@
-FROM alpine:latest
-USER root
-WORKDIR /usr/java
-RUN apk update
-RUN apk fetch openjdk8
-RUN apk add openjdk8
-ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk
-ENV PATH="$JAVA_HOME/bin:${PATH}"
+FROM eclipse-temurin:21-jdk-alpine
 
+# Create non-root user
+RUN adduser -D -u 1000 runner
 
-# docker build -t java:v1 . 
-# run this command while in the java directory
+WORKDIR /app
+COPY runner.sh /app/runner.sh
+RUN chmod +x /app/runner.sh
+
+USER runner
+
+ENTRYPOINT ["/app/runner.sh"]
