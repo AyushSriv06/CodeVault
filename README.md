@@ -1,126 +1,172 @@
 # CodeVault
 
-CodeVault is a high-performance, secure, and scalable remote code execution platform. It provides a robust environment for practicing coding, solving problems, and collaborating in real-time.
+CodeVault is a secure and scalable remote code-execution platform for:
+- practicing coding problems
+- running custom code in an online compiler
+- tracking submissions and user progress
 
-## Architecture and Execution Flow
+## Architecture (Visual + Intuitive)
 
-The system is designed with a decoupled architecture to ensure that the API remains responsive even under high load, while maintaining strict isolation for untrusted code execution.
+### 1) System Overview
 
-### High-Level Flow
+```mermaid
+flowchart LR
+    U[User Browser] --> FE[React Frontend]
 
-1.  **Job Submission**: The React frontend sends a POST request containing the source code, input, and language configuration to the Backend API.
-2.  **Job Enqueueing**: The API validates the request and adds a new job to the `execution-queue` in **Redis** using **BullMQ**. The client receives a unique `jobId` immediately and enters a polling state.
-3.  **Job Management (Redis)**: Redis acts as the message broker, maintaining the state of the queue. BullMQ manages the lifecycle of each job (waiting, active, completed, failed, or delayed).
-4.  **Worker Consumption**: Workers (which can be scaled independently) listen to the Redis queue. When a job is retrieved, the worker invokes the **Execution Service**.
-5.  **Execution Engine (Docker / Kubernetes)**:
-    *   **Docker Mode**: The execution service spawns an isolated Docker container on the host. The code and input are passed via environment variables (Base64 encoded) to prevent shell injection.
-    *   **Kubernetes Mode**: The execution service interacts with the K8s API (`BatchV1Api`) to create a one-shot `Job`. A dedicated runner pod is created to execute the code.
-6.  **Result Capture**: Once the execution finishes (or hits a timeout), the executor captures stdout and stderr, retrieves the exit code, and returns the data to the worker.
-7.  **Job Completion**: The worker marks the BullMQ job as completed and stores the execution results.
-8.  **Status Retrieval**: The frontend polls the `GET /job/:id` endpoint. The API queries Redis for the current job state and return value. Once the job is completed, the frontend displays the output to the user.
+    subgraph API_Node["Node.js API (Express)"]
+      RC["POST /run/onlinecompiler"]
+      RP["POST /run/practiceproblems"]
+      JS["GET /job/:id"]
+    end
 
----
+    FE --> RC
+    FE --> RP
+    FE --> JS
 
-## Infrastructure and Scalability
+    RC --> Q[(BullMQ Queue<br/>execution-queue)]
+    RP --> Q
+    JS --> Q
 
-### Kubernetes Orchestration
-The project includes comprehensive Kubernetes manifests for deploying the entire stack:
-- **API and Workers**: Deployed as independent deployments to allow separate scaling.
-- **Redis and MongoDB**: Statefull services deployed with persistent volume claims to ensure data durability.
-- **Resource Limits**: Every pod is constrained with CPU and memory limits to prevent cluster resource exhaustion.
+    Q --> W[Execution Worker]
+    W --> ES[Execution Service]
+    ES --> CV[Code Validator]
+    ES --> DM[Docker Executor]
+    ES --> KM[Kubernetes Executor]
 
-### Autoscaling with KEDA
-To handle varying loads efficiently, the system utilizes **KEDA (Kubernetes Event-driven Autoscaling)**. A `ScaledObject` monitors the length of the `execution-queue` in Redis. As the number of pending jobs increases, KEDA automatically scales the number of worker pods horizontally. Once the queue is drained, it scales back down to save resources.
+    W --> M[(MongoDB)]
+    JS --> FE
+```
 
----
+### 2) Request Lifecycle (Compiler / Practice)
 
-## Security Features
+```mermaid
+sequenceDiagram
+    participant C as Client (Frontend)
+    participant A as API
+    participant Q as BullMQ + Redis
+    participant W as Worker
+    participant E as Execution Service
+    participant X as Docker/K8s Executor
+    participant D as MongoDB
 
-CodeVault implements multiple layers of security to ensure that user-submitted code cannot affect the host environment or other services.
+    C->>A: POST /run/onlinecompiler or /run/practiceproblems
+    A->>Q: enqueue job ("compiler" | "practice")
+    A-->>C: { jobId, status: "queued" }
 
-### Static Code Validation
-Before execution, a validator scans the code for forbidden patterns specific to each language. This prevents common attacks such as:
-- **Process Spawning**: Blocking `system()`, `fork()`, `exec()`, `subprocess`, and `Runtime.exec`.
-- **System Calls**: Blocking direct access to kernel headers or low-level unreferenced imports.
-- **Network Requests**: Blocking attempts to use standard socket libraries or HTTP clients.
+    loop polling
+      C->>A: GET /job/:id
+      A->>Q: lookup job state
+      A-->>C: queued | active | completed | failed
+    end
 
-### Execution Isolation (Docker)
-When running in Docker mode, the system applies the following constraints:
-- **Network Isolation**: Containers are started with `--network none` to prevent data exfiltration.
-- **Read-Only Filesystem**: The container's root filesystem is mounted as read-only.
-- **RAM-backed Temps**: A temporary `tmpfs` is mounted at `/tmp` (limited size) for necessary temporary files.
-- **PID Limits**: Restricts the maximum number of concurrent processes to prevent fork bombs.
-- **Output Capping**: Stdout/Stderr buffers are capped to prevent memory-exhaustion attacks.
+    Q->>W: deliver job
+    W->>E: executeCode(language, code, input)
+    E->>X: run in isolated runtime
+    X-->>E: stdout, stderr, exitCode, executionTime
+    E-->>W: execution result
+    W->>D: save submission/stats (when applicable)
+    W->>Q: mark completed(returnvalue)
+```
+
+### 3) Job State Model
+
+```mermaid
+stateDiagram-v2
+    [*] --> queued
+    queued --> active
+    queued --> delayed
+    delayed --> queued
+    active --> completed
+    active --> failed
+    completed --> [*]
+    failed --> [*]
+```
+
+### 4) Execution Path Decision
+
+```mermaid
+flowchart TD
+    A[Worker receives job] --> B[validateCode()]
+    B --> C{EXECUTOR_MODE}
+    C -->|docker/default| D[executeInDocker()]
+    C -->|k8s / kubernetes| E[executeInK8s()]
+    D --> F[Return stdout/stderr/metadata]
+    E --> F
+```
+
+## Core Components
+
+| Component | Responsibility |
+|---|---|
+| Frontend (React + Vite) | Code editor, problem-solving UI, job polling, result rendering |
+| API (Express) | Accept submissions, enqueue jobs, expose job status, auth and app APIs |
+| Queue (BullMQ + Redis) | Decouple request handling from execution workload |
+| Worker | Consume queued jobs, execute code, persist results |
+| Execution Service | Validate code and route to Docker or Kubernetes executor |
+| MongoDB | Store users, submissions, problems, and user stats |
+
+## Why This Design Is Scalable
+
+- API returns quickly with `jobId`; long-running execution happens asynchronously.
+- Worker count can scale independently from API replicas.
+- Redis queue absorbs traffic spikes.
+- KEDA can autoscale workers based on queue backlog (`bull:execution-queue:wait`).
+
+## Security Model (Defense in Depth)
+
+### Static Validation
+- Blocks risky patterns such as process spawning, shell escapes, and direct networking primitives.
+
+### Docker Isolation
+- Network disabled (`--network none`)
+- Read-only filesystem
+- `tmpfs` for temp files with limits
+- PID and output constraints
 
 ### Kubernetes Hardening
-In Kubernetes mode, runner pods use a highly secure `SecurityContext`:
-- **runAsNonRoot**: Pods run as a limited user (UID 1000).
-- **allowPrivilegeEscalation**: Set to false to prevent standard privilege gain techniques.
-- **Seccomp Profiles**: Uses the `RuntimeDefault` profile to filter dangerous system calls at the kernel level.
-- **Active Deadlines**: Uses native K8s `activeDeadlineSeconds` to ensure processes are killed if they hang or exceed time limits.
+- Non-root runtime
+- `allowPrivilegeEscalation: false`
+- Seccomp `RuntimeDefault`
+- Execution deadline via `activeDeadlineSeconds`
 
----
+## Tech Stack
 
-## Technology Stack
+- Frontend: React, Vite, Tailwind CSS, Monaco Editor, Redux Toolkit
+- Backend: Node.js, Express, BullMQ, ioredis, Mongoose
+- Infra: Docker, Kubernetes, KEDA, Redis, MongoDB
 
-- **Frontend**: React, Vite, Tailwind CSS, Monaco Editor, Socket.io-client, Redux Toolkit.
-- **Backend API**: Node.js, Express, BullMQ, ioredis, Mongoose.
----
+## Run Locally
 
-## How to Run
+1. Start infra:
+```bash
+docker compose up -d
+```
 
-### Local Development Environment
+2. Start backend:
+```bash
+cd backend
+npm install
+npm run dev
+```
 
-1.  **Infrastructure Setup**:
-    Start the required database and caching services using Docker Compose:
-    ```bash
-    docker compose up -d
-    ```
-    This will start MongoDB on port 27017 and Redis on port 6379.
+3. Start frontend:
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-2.  **Backend Configuration**:
-    Navigate to the backend directory and install dependencies:
-    ```bash
-    cd backend
-    npm install
-    ```
-    Create a `.env` file based on `.env.sample`. Ensure `DB_URL` points to your MongoDB instance and Redis configuration matches your local setup.
+4. Open app:
+- `http://localhost:5173`
 
-3.  **Start Background Services**:
-    Run the API server in development mode:
-    ```bash
-    npm run dev
-    ```
-    Note: The execution worker is integrated into the API process and will start automatically.
+## Deploy on Kubernetes
 
-4.  **Frontend Setup**:
-    Navigate to the frontend directory and install dependencies:
-    ```bash
-    cd frontend
-    npm install
-    npm run dev
-    ```
-    The application will be accessible at `http://localhost:5173`.
-
-### Kubernetes Deployment
-
-1.  **Context Configuration**:
-    Ensure your kubectl context is pointing to the target cluster (e.g., Minikube).
-
-2.  **Apply Manifests**:
-    Deploy all components including KEDA ScaledObjects and Network Policies:
-    ```bash
-    kubectl apply -f k8s/
-    ```
-
-3.  **Verify Services**:
-    Check the status of the deployments:
-    ```bash
-    kubectl get pods -n default
-    ```
-
-4.  **Expose the Frontend**:
-    If using Minikube, you can access the frontend service via:
-    ```bash
-    minikube service frontend-service
-    ```
+1. Ensure your `kubectl` context points to your cluster.
+2. Apply manifests:
+```bash
+kubectl apply -f k8s/
+```
+3. Verify:
+```bash
+kubectl get pods -n codevault-exec
+```
