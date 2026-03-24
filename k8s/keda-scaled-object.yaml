@@ -13,6 +13,6 @@ spec:
   triggers:
   - type: redis
     metadata:
-      address: redis-service.codevault-exec.svc.cluster.local:6379
-      listName: bull:executionQueue:wait
+      address: 10.108.19.172:6379
+      listName: bull:execution-queue:wait
       listLength: "5"

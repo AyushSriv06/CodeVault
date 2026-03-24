@@ -27,6 +27,6 @@ spec:
         - name: EXECUTION_NAMESPACE
           value: "codevault-exec"
         - name: REDIS_HOST
-          value: "redis-service"
+          value: "redis-service.codevault-exec.svc.cluster.local"
         - name: DB_URL
-          value: "mongodb://mongo-service:27017/codevault"
+          value: "mongodb://mongo-service.codevault-exec.svc.cluster.local:27017/codevault"

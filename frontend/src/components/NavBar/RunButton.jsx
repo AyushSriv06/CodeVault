@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
 import { React, useEffect, useState } from "react";
-import { runCompilerCode, runPracticeCode } from "../../services/runCodeApi";
+import { runCompilerCode, runPracticeCode, getJobStatus } from "../../services/runCodeApi";
 import { isLoggedIn } from "../Login/isLoggedIn";
 import { useLocation, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -52,7 +52,34 @@ const RunButton = () => {
 
                                 const result = await runCompilerCode(reqBody);
 
-                                if (result.stdout) {
+                                if (result.jobId) {
+                                        // Poll for results
+                                        let status = "queued";
+                                        let finalResult = null;
+                                        
+                                        while (status === "queued" || status === "active" || status === "delayed") {
+                                                await new Promise(resolve => setTimeout(resolve, 1000));
+                                                const statusRes = await getJobStatus(result.jobId);
+                                                status = statusRes.status;
+                                                if (status === "completed") {
+                                                        finalResult = statusRes;
+                                                } else if (status === "failed") {
+                                                        throw new Error(statusRes.error || "Job failed");
+                                                }
+                                        }
+
+                                        if (finalResult && finalResult.stdout) {
+                                                dispatch(updateOutput(finalResult.stdout));
+                                                dispatch(updateToggleOutput(true));
+                                        } else {
+                                                dispatch(
+                                                        updateOutput(
+                                                                `Error During Execution : \n ${finalResult?.stderr || "Unknown error"}`
+                                                        )
+                                                );
+                                                dispatch(updateToggleOutput(true));
+                                        }
+                                } else if (result.stdout) {
                                         dispatch(updateOutput(result.stdout));
                                         dispatch(updateToggleOutput(true));
                                 } else {
@@ -75,7 +102,37 @@ const RunButton = () => {
 
                                 const result = await runPracticeCode(reqBody);
 
-                                if (result?.resp?.stdout) {
+                                if (result.jobId) {
+                                        // Poll for results
+                                        let status = "queued";
+                                        let finalResult = null;
+                                        
+                                        while (status === "queued" || status === "active" || status === "delayed") {
+                                                await new Promise(resolve => setTimeout(resolve, 1000));
+                                                const statusRes = await getJobStatus(result.jobId);
+                                                status = statusRes.status;
+                                                if (status === "completed") {
+                                                        finalResult = statusRes;
+                                                } else if (status === "failed") {
+                                                        throw new Error(statusRes.error || "Job failed");
+                                                }
+                                        }
+
+                                        if (finalResult && finalResult.stdout) {
+                                                const index = finalResult.stdout?.indexOf("Test case 1");
+                                                const trimmed_result = finalResult.stdout?.substring(index);
+                                                dispatch(updateOutput(trimmed_result));
+                                                dispatch(updateToggleOutput(true));
+                                                dispatch(updatePracticeStatus(finalResult.status));
+                                        } else {
+                                                dispatch(
+                                                        updateOutput(
+                                                                `Error During Execution : \n ${finalResult?.stderr || "Unknown error"}`
+                                                        )
+                                                );
+                                                dispatch(updateToggleOutput(true));
+                                        }
+                                } else if (result?.resp?.stdout) {
                                         const index = result.resp.stdout?.indexOf("Test case 1");
                                         const trimmed_result = result.resp.stdout?.substring(index);
                                         dispatch(updateOutput(trimmed_result));

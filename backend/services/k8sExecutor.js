@@ -20,7 +20,7 @@ const LANGUAGE_CONFIG = {
     python: { image: "codevault-python-runner", ext: "py" },
 };
 
-const EXECUTION_TIMEOUT = parseInt(process.env.EXECUTION_TIMEOUT) || 10000;
+const EXECUTION_TIMEOUT = parseInt(process.env.EXECUTION_TIMEOUT) || 30000;
 const MEMORY_LIMIT = process.env.MEMORY_LIMIT || "128Mi";
 const NAMESPACE = process.env.EXECUTION_NAMESPACE || "default";
 
@@ -53,22 +53,40 @@ async function waitForJobCompletion(jobName) {
                 // if configured with the default fetch-based client, or it might have a .body property.
                 const job = response.status?.conditions ? response : (response.body || response);
 
-                if (job?.status?.conditions) {
-                    const completeCondition = job.status.conditions.find(c => c.type === "Complete" && c.status === "True");
-                    const failedCondition = job.status.conditions.find(c => c.type === "Failed" && c.status === "True");
-
-                    if (completeCondition) {
+                if (job?.status) {
+                    const { succeeded, failed, conditions } = job.status;
+                    
+                    if (succeeded > 0) {
                         clearTimeout(timeout);
                         clearInterval(interval);
                         resolve("completed");
-                    } else if (failedCondition) {
+                        return;
+                    }
+
+                    if (failed > 0) {
                         clearTimeout(timeout);
                         clearInterval(interval);
                         resolve("failed");
+                        return;
+                    }
+
+                    if (conditions) {
+                        const completeCondition = conditions.find(c => c.type === "Complete" && c.status === "True");
+                        const failedCondition = conditions.find(c => c.type === "Failed" && c.status === "True");
+
+                        if (completeCondition) {
+                            clearTimeout(timeout);
+                            clearInterval(interval);
+                            resolve("completed");
+                        } else if (failedCondition) {
+                            clearTimeout(timeout);
+                            clearInterval(interval);
+                            resolve("failed");
+                        }
                     }
                 }
             } catch (err) {
-                // Ignore transient errors
+                console.error(`Status check error for job ${jobName}:`, err.message);
             }
         }, 500);
     });

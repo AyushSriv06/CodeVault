@@ -7,7 +7,5 @@ spec:
   podSelector:
     matchLabels:
       role: runner
-  policyTypes:
-  - Ingress
-  - Egress
-  # Empty Ingress and Egress means deny all inbound and outbound traffic
+  egress:
+  - {}

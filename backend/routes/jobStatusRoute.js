@@ -3,6 +3,7 @@ const router = express.Router();
 const { executionQueue } = require("../queue/executionQueue");
 
 router.get("/:id", async (req, res) => {
+	res.set('Cache-Control', 'no-store');
 	try {
 		const job = await executionQueue.getJob(req.params.id);
 		
