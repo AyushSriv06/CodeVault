@@ -5,7 +5,7 @@ CodeVault is a secure and scalable remote code-execution platform for:
 - running custom code in an online compiler
 - tracking submissions and user progress
 
-## Architecture (Visual + Intuitive)
+## Architecture 
 
 ### 1) System Overview
 
@@ -105,14 +105,14 @@ flowchart TD
 | Execution Service | Validate code and route to Docker or Kubernetes executor |
 | MongoDB | Store users, submissions, problems, and user stats |
 
-## Why This Design Is Scalable
+## Scalable Design
 
 - API returns quickly with `jobId`; long-running execution happens asynchronously.
 - Worker count can scale independently from API replicas.
 - Redis queue absorbs traffic spikes.
 - KEDA can autoscale workers based on queue backlog (`bull:execution-queue:wait`).
 
-## Security Model (Defense in Depth)
+## Security Model 
 
 ### Static Validation
 - Blocks risky patterns such as process spawning, shell escapes, and direct networking primitives.
