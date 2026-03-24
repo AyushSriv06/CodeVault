@@ -7,6 +7,84 @@ const CompilerSubmission = require("../models/CompilerSubmission");
 const Question = require("../models/Question");
 const UserStats = require("../models/UserStats");
 
+function parseJudgeOutput(stdout = "") {
+	const startMarker = "__JUDGE_START__";
+	const endMarker = "__JUDGE_END__";
+	const start = stdout.indexOf(startMarker);
+	const end = stdout.indexOf(endMarker);
+
+	if (start === -1 || end === -1 || end <= start) {
+		return null;
+	}
+
+	const body = stdout
+		.slice(start + startMarker.length, end)
+		.split("\n")
+		.map((line) => line.trim())
+		.filter(Boolean);
+
+	let total = 0;
+	let passed = 0;
+	const cases = [];
+
+	for (const line of body) {
+		if (line.startsWith("TOTAL|")) {
+			total = parseInt(line.split("|")[1], 10) || 0;
+			continue;
+		}
+
+		if (line.startsWith("PASSED|")) {
+			passed = parseInt(line.split("|")[1], 10) || 0;
+			continue;
+		}
+
+		if (line.startsWith("CASE|")) {
+			const parts = line.split("|");
+			cases.push({
+				index: parseInt(parts[1], 10) || 0,
+				passed: parts[2] === "PASS",
+				input: parts[3] || "",
+				expected: parts[4] || "",
+				got: parts.slice(5).join("|") || "",
+			});
+		}
+	}
+
+	if (total === 0 && cases.length > 0) {
+		total = cases.length;
+	}
+
+	return { total, passed, cases };
+}
+
+function buildPracticeSummary(judge, fallbackStdout = "", fallbackStderr = "") {
+	if (!judge) {
+		return fallbackStdout || fallbackStderr || "No output returned.";
+	}
+
+	const failedCases = judge.cases.filter((c) => !c.passed);
+	const lines = [];
+	const accepted = judge.total > 0 && judge.passed === judge.total;
+
+	lines.push(`Verdict: ${accepted ? "Accepted" : "Wrong Answer"}`);
+	lines.push(`Passed ${judge.passed}/${judge.total} test cases.`);
+
+	if (failedCases.length > 0) {
+		lines.push("");
+		lines.push("Failed Cases:");
+		for (const failed of failedCases.slice(0, 3)) {
+			lines.push(
+				`#${failed.index} Input: ${failed.input} | Expected: ${failed.expected} | Got: ${failed.got}`
+			);
+		}
+		if (failedCases.length > 3) {
+			lines.push(`...and ${failedCases.length - 3} more failed case(s).`);
+		}
+	}
+
+	return lines.join("\n");
+}
+
 /**
  * Handle practice problem submission processing
  */
@@ -20,10 +98,13 @@ async function handlePracticeSubmission(jobData) {
 	const fullCode = `${code}\n${templateCode}`;
 
 	const result = await executeCode(language, fullCode, "");
-	
-	const failedStatus = (result.stdout || "").includes("Failed");
-	const passed = !failedStatus;
+	const judge = parseJudgeOutput(result.stdout || "");
+	const fallbackPassed =
+		(result.stdout || "").includes("Passed") && !(result.stdout || "").includes("Failed");
+	const passed =
+		judge && judge.total > 0 ? judge.passed === judge.total : fallbackPassed && !result.stderr;
 	const practiceStatus = passed ? "Passed" : "Failed";
+	const summary = buildPracticeSummary(judge, result.stdout, result.stderr);
 
 	if (userEmail && userName) {
 		const submission = new PracticeSubmission({
@@ -31,7 +112,7 @@ async function handlePracticeSubmission(jobData) {
 			user_name: userName,
 			language,
 			code,
-			output: result.stdout || result.stderr,
+			output: summary,
 			question_id: questionID,
 			status: practiceStatus,
 		});
@@ -52,7 +133,12 @@ async function handlePracticeSubmission(jobData) {
 		}
 	}
 
-	return { ...result, status: passed };
+	return {
+		...result,
+		stdout: summary,
+		status: passed,
+		judge,
+	};
 }
 
 /**

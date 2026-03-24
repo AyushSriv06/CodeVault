@@ -53,19 +53,24 @@ const RunButton = () => {
                                 const result = await runCompilerCode(reqBody);
 
                                 if (result.jobId) {
-                                        // Poll for results
-                                        let status = "queued";
                                         let finalResult = null;
-                                        
-                                        while (status === "queued" || status === "active" || status === "delayed") {
+
+                                        while (!finalResult) {
                                                 await new Promise(resolve => setTimeout(resolve, 1000));
                                                 const statusRes = await getJobStatus(result.jobId);
-                                                status = statusRes.status;
-                                                if (status === "completed") {
-                                                        finalResult = statusRes;
-                                                } else if (status === "failed") {
+                                                const currentStatus = statusRes.status;
+
+                                                if (currentStatus === "failed") {
                                                         throw new Error(statusRes.error || "Job failed");
                                                 }
+                                                if (
+                                                        currentStatus === "queued" ||
+                                                        currentStatus === "active" ||
+                                                        currentStatus === "delayed"
+                                                ) {
+                                                        continue;
+                                                }
+                                                finalResult = statusRes;
                                         }
 
                                         if (finalResult && finalResult.stdout) {
@@ -103,27 +108,35 @@ const RunButton = () => {
                                 const result = await runPracticeCode(reqBody);
 
                                 if (result.jobId) {
-                                        // Poll for results
-                                        let status = "queued";
                                         let finalResult = null;
-                                        
-                                        while (status === "queued" || status === "active" || status === "delayed") {
+
+                                        while (!finalResult) {
                                                 await new Promise(resolve => setTimeout(resolve, 1000));
                                                 const statusRes = await getJobStatus(result.jobId);
-                                                status = statusRes.status;
-                                                if (status === "completed") {
-                                                        finalResult = statusRes;
-                                                } else if (status === "failed") {
+                                                const currentStatus = statusRes.status;
+
+                                                if (currentStatus === "failed") {
                                                         throw new Error(statusRes.error || "Job failed");
                                                 }
+                                                if (
+                                                        currentStatus === "queued" ||
+                                                        currentStatus === "active" ||
+                                                        currentStatus === "delayed"
+                                                ) {
+                                                        continue;
+                                                }
+                                                finalResult = statusRes;
                                         }
 
                                         if (finalResult && finalResult.stdout) {
-                                                const index = finalResult.stdout?.indexOf("Test case 1");
-                                                const trimmed_result = finalResult.stdout?.substring(index);
-                                                dispatch(updateOutput(trimmed_result));
+                                                dispatch(updateOutput(finalResult.stdout));
                                                 dispatch(updateToggleOutput(true));
-                                                dispatch(updatePracticeStatus(finalResult.status));
+                                                const passed = Boolean(finalResult.status);
+                                                dispatch(updatePracticeStatus(passed));
+                                                toast[passed ? "success" : "error"](
+                                                        passed ? "Accepted: all test cases passed." : "Wrong Answer: some test cases failed.",
+                                                        { position: "bottom-right" }
+                                                );
                                         } else {
                                                 dispatch(
                                                         updateOutput(
@@ -133,11 +146,9 @@ const RunButton = () => {
                                                 dispatch(updateToggleOutput(true));
                                         }
                                 } else if (result?.resp?.stdout) {
-                                        const index = result.resp.stdout?.indexOf("Test case 1");
-                                        const trimmed_result = result.resp.stdout?.substring(index);
-                                        dispatch(updateOutput(trimmed_result));
+                                        dispatch(updateOutput(result.resp.stdout));
                                         dispatch(updateToggleOutput(true));
-                                        dispatch(updatePracticeStatus(result.status));
+                                        dispatch(updatePracticeStatus(Boolean(result.status)));
                                 } else {
                                         dispatch(
                                                 updateOutput(

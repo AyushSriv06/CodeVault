@@ -13,6 +13,14 @@ const questionSchema = new mongoose.Schema({
                 type: String,
                 required: true,
         },
+        constraints: {
+                type: [String],
+                default: [],
+        },
+        topics: {
+                type: [String],
+                default: [],
+        },
         diff: {
                 type: String,
                 enum: ["easy", "medium", "hard"],
@@ -21,12 +29,25 @@ const questionSchema = new mongoose.Schema({
         example_cases: {
                 type: [
                         {
-                                input: [mongoose.Schema.Types.Mixed],
+                                input: mongoose.Schema.Types.Mixed,
                                 output: mongoose.Schema.Types.Mixed,
                                 explanation: String,
                         },
                 ],
                 required: true,
+        },
+        test_cases: {
+                type: [
+                        {
+                                input: String,
+                                output: String,
+                                isHidden: {
+                                        type: Boolean,
+                                        default: false,
+                                },
+                        },
+                ],
+                default: [],
         },
         solution: {
                 type: {

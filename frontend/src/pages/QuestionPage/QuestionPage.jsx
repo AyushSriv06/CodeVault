@@ -5,30 +5,26 @@ import { React, useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { fetchQuestionById } from "../../services/practiceProblemsApi";
 import Header from "../../components/Header/Header.jsx";
-import Footer from "../../components/Footer/Footer.jsx";
 import Question from "../../components/Question/Question.jsx";
 import ProblemList from "../../components/ProblemList/ProblemList.jsx";
 import NavBar from "../../components/NavBar/NavBar.jsx";
 import CodeEditor from "../../components/CodeEditor/CodeEditor.jsx";
+import OutputWindow from "../../components/OutputWindow/OutputWindow.jsx";
 import ProblemSolutions from "../../components/ProblemSolutions/ProblemSolutions.jsx";
 import QuestionSubmission from "../../components/SubmissionList/QuestionSubmission.jsx";
 import { isLoggedIn } from "../../components/Login/isLoggedIn.js";
 import { getUserStatus } from "../../services/getUserStats.js";
 import FullScreenConfetti from "../../components/Confetti/FullScreenConfetti.jsx";
 import Loading from "../../components/Loading/Loading.jsx";
-import { useDispatch, useSelector } from "react-redux";
-import { updateToggleOutput } from "../../redux/slices/toggleOutput.js";
+import { useSelector } from "react-redux";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
-import { Maximize2, Minimize2, Terminal } from "lucide-react";
 
 const QuestionPage = () => {
         const [loading, setLoading] = useState(false);
         const { id } = useParams();
         const [question, setQuestion] = useState(null);
-        const dispatch = useDispatch();
         const toggleOutput = useSelector((state) => state.toggleOutput?.value);
         const practiceStatus = useSelector((state) => state.practiceStatus?.value);
-        const output = useSelector((state) => state.output?.value);
         const [response, setResponse] = useState();
 
         useEffect(() => {
@@ -52,10 +48,6 @@ const QuestionPage = () => {
                         handleStats();
                 }
         }, [id]);
-
-        const handleToggleOutput = () => {
-                dispatch(updateToggleOutput(!toggleOutput));
-        };
 
         if (loading) return <div className="min-h-screen bg-zinc-950 flex items-center justify-center"><Loading /></div>;
 
@@ -119,13 +111,15 @@ const QuestionPage = () => {
                                                         <NavBar />
                                                 </div>
 
-                                                {/* Editor Area */}
-                                                <textarea
-                                                        className="w-full h-full bg-transparent text-zinc-300 p-4 font-mono text-sm resize-none focus:outline-none"
-                                                        readOnly
-                                                        value={output || "Run code to see output..."}
-                                                        placeholder="Output will be displayed here..."
-                                                />
+                                                <div className="flex-1 min-h-0 p-3">
+                                                        <CodeEditor question={question} />
+                                                </div>
+
+                                                {toggleOutput && (
+                                                        <div className="h-[35%] min-h-[180px] p-3 pt-0">
+                                                                <OutputWindow />
+                                                        </div>
+                                                )}
                                         </div>
                                 </div>
                         </div>
