@@ -86,11 +86,11 @@ stateDiagram-v2
 
 ```mermaid
 flowchart TD
-    A[Worker receives job] --> B[validateCode()]
+    A["Worker receives job"] --> B["validateCode()"]
     B --> C{EXECUTOR_MODE}
-    C -->|docker/default| D[executeInDocker()]
-    C -->|k8s / kubernetes| E[executeInK8s()]
-    D --> F[Return stdout/stderr/metadata]
+    C -->|docker/default| D["executeInDocker()"]
+    C -->|k8s / kubernetes| E["executeInK8s()"]
+    D --> F["Return stdout/stderr/metadata"]
     E --> F
 ```
 
