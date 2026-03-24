@@ -4,19 +4,44 @@
 import React, { useEffect } from "react";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
-import { Link, useLocation } from "react-router-dom";
-import { handlegoogleRedirect } from "../../services/getGoogleAuth";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 
-function GoogleRedirect() {
-        const search = window.location.search;
-        const params = new URLSearchParams(search);
-        const code = params.get("code");
+import { toast } from "react-toastify";
 
-        useEffect(() => {
-                handlegoogleRedirect(code);
-        }, []);
+function GoogleRedirect() {
+	const navigate = useNavigate();
+	const location = useLocation();
+
+	useEffect(() => {
+		const params = new URLSearchParams(location.search);
+		const token = params.get("token");
+		const username = params.get("username");
+		const email = params.get("email");
+		const error = params.get("error");
+
+		if (error) {
+			toast.error(`Login failed: ${error}`);
+			navigate("/");
+			return;
+		}
+
+		if (token && username && email) {
+			localStorage.setItem("token", token);
+			localStorage.setItem("username", username);
+			localStorage.setItem("email", email);
+
+			toast.success(`Welcome, ${username}!`);
+			// Redirect to home after a short delay
+			setTimeout(() => {
+				window.location.href = "/";
+			}, 1000);
+		} else {
+			toast.error("OAuth login failed: Missing data");
+			navigate("/");
+		}
+	}, [location, navigate]);
 
         return (
                 <div className="min-h-screen bg-background flex flex-col">

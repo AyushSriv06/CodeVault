@@ -53,34 +53,33 @@ async function login(email, password, res) {
 }
 
 async function googleLogin(email, username, res) {
-        const frontendURL = process.env.FRONTEND_URL;
-        try {
-                // Check if user exists
-                const user = await User.findOne({ email });
-                let newUser = null;
-                let token = null;
-                if (!user) {
-                        const password = generator.generate({ length: 10, numbers: true });
-                        newUser = new User({
-                                username: username,
-                                email: email,
-                                password: password,
-                        });
-                        await newUser.save();
-                        token = jwt.sign({ userId: newUser._id, email: newUser.email }, "abcd1234", {
-                                expiresIn: "1h",
-                        });
-                        res.json({ message: "Login successful", username: newUser.username, token, email: newUser.email });
-                } else {
-                        token = jwt.sign({ userId: user._id, email: user.email }, "abcd1234", {
-                                expiresIn: "1h",
-                        });
-                        res.json({ message: "Login successful", username: user.username, token, email: user.email });
-                }
-        } catch (error) {
-                console.error(error);
-                res.status(500).json({ error: "Server error" });
-        }
+	const frontendURL = process.env.FRONTEND_URL || "http://localhost:5173";
+	try {
+		// Check if user exists
+		let user = await User.findOne({ email });
+		
+		if (!user) {
+			const password = generator.generate({ length: 10, numbers: true });
+			user = new User({
+				username: username,
+				email: email,
+				password: password,
+			});
+			await user.save();
+		}
+
+		const token = jwt.sign({ userId: user._id, email: user.email }, "abcd1234", {
+			expiresIn: "24h", // Longer expiry for OAuth
+		});
+
+		// Redirect to frontend with data in query params
+		const redirectUrl = `${frontendURL}/google/redirect?token=${token}&username=${encodeURIComponent(user.username)}&email=${encodeURIComponent(user.email)}`;
+		return res.redirect(redirectUrl);
+		
+	} catch (error) {
+		console.error("Error in googleLogin:", error);
+		res.redirect(`${frontendURL}/login?error=ServerRegistrationError`);
+	}
 }
 
 module.exports = { signup, login, googleLogin };
