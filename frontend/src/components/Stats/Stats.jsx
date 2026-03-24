@@ -9,11 +9,11 @@ export default function Stats({ response }) {
                 medium: response?.data?.attempts?.medium || 0,
                 hard: response?.data?.attempts?.hard || 0,
         };
-        const TotalProblems = {
-                easy: 2,
-                medium: 2,
-                hard: 1,
-        };
+	const TotalProblems = {
+		easy: response?.totalCounts?.easy || 0,
+		medium: response?.totalCounts?.medium || 0,
+		hard: response?.totalCounts?.hard || 0,
+	};
 
         const calculatePercentage = (solved, total) => {
                 if (!total) return 0;
