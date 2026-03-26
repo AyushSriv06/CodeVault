@@ -1,9 +1,5 @@
 import axios from "axios";
 
-/**
- * Initiates the Google OAuth flow by fetching the auth URL from the backend
- * and redirecting the user to Google's consent screen.
- */
 export const getGoogleAuth = async () => {
     try {
         const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
@@ -18,6 +14,3 @@ export const getGoogleAuth = async () => {
         console.error("Error initiating Google Auth:", error);
     }
 };
-
-// handlegoogleRedirect is removed as the backend now handles the token exchange 
-// and redirects directly to the frontend with the user data.

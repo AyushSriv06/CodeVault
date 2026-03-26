@@ -10,9 +10,6 @@ const { googleLogin } = require("../controller/authController");
 
 dotenv.config();
 
-/**
- * Handle the callback from Google
- */
 router.get("/redirect", async (req, res) => {
 	const code = req.query.code;
 	const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
@@ -52,9 +49,6 @@ router.get("/redirect", async (req, res) => {
 	}
 });
 
-/**
- * Get the Google Auth URL
- */
 router.get("/auth", (req, res) => {
 	const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
 	const rootURL = "https://accounts.google.com/o/oauth2/v2/auth";

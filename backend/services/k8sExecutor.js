@@ -24,9 +24,8 @@ const EXECUTION_TIMEOUT = parseInt(process.env.EXECUTION_TIMEOUT) || 30000;
 const MEMORY_LIMIT = process.env.MEMORY_LIMIT || "128Mi";
 const NAMESPACE = process.env.EXECUTION_NAMESPACE || "default";
 
-/**
- * Wait for K8s Job to complete or fail.
- */
+
+ // Wait for K8s Job to complete or fail
 async function waitForJobCompletion(jobName) {
     return new Promise((resolve, reject) => {
         const timeout = setTimeout(async () => {
@@ -92,9 +91,8 @@ async function waitForJobCompletion(jobName) {
     });
 }
 
-/**
- * Fetch logs of a pod belonging to a Job
- */
+
+ // Fetch logs of a pod belonging to a Job
 async function getJobLogs(jobName) {
     let logs = "";
     try {
@@ -119,9 +117,7 @@ async function getJobLogs(jobName) {
     return logs;
 }
 
-/**
- * Execute code inside a Kubernetes Job
- */
+ // Execute code inside a Kubernetes Job
 async function executeInK8s(language, code, userInput = "") {
     const config = LANGUAGE_CONFIG[language];
     if (!config) {

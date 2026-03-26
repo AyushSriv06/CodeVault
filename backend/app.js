@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const dotenv = require("dotenv");
+dotenv.config();
 const runCodeRoute = require("./routes/runCodeRoute");
 const practiceProblemsRoute = require("./routes/practiceProblemsRoute");
 const authRoute = require("./routes/authRoute");
@@ -17,7 +18,6 @@ const socketController = require("./controller/socketController");
 // Initialize queue worker
 require("./worker/executionWorker");
 const leaderboard = require("./routes/leaderBoardRoute");
-dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(cors());
