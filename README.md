@@ -68,32 +68,6 @@ sequenceDiagram
     W->>Q: mark completed(returnvalue)
 ```
 
-### 3) Job State Model
-
-```mermaid
-stateDiagram-v2
-    [*] --> queued
-    queued --> active
-    queued --> delayed
-    delayed --> queued
-    active --> completed
-    active --> failed
-    completed --> [*]
-    failed --> [*]
-```
-
-### 4) Execution Path Decision
-
-```mermaid
-flowchart TD
-    A["Worker receives job"] --> B["validateCode()"]
-    B --> C{EXECUTOR_MODE}
-    C -->|docker/default| D["executeInDocker()"]
-    C -->|k8s / kubernetes| E["executeInK8s()"]
-    D --> F["Return stdout/stderr/metadata"]
-    E --> F
-```
-
 ## Core Components
 
 | Component | Responsibility |
